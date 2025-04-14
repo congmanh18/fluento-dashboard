@@ -1,4 +1,4 @@
-# Hướng dẫn deploy project VueJS Quasar mới với CI/CD trên AWS
+# Hướng dẫn deploy project VueJS Quasar mới với CI/CD trên AWS EC2 với Nginx
 
 ## Tổng quan
 
@@ -68,242 +68,131 @@ Bài hướng dẫn này sẽ giúp bạn:
 
 ## Bước 2: Cấu hình AWS cho deployment
 
-### 2.1. Tạo S3 bucket
+1. **Tạo EC2 instance**:
 
-1. Đăng nhập vào **AWS Management Console**.
-2. Vào **S3** > **Create bucket**:
-   - **Bucket name**: `my-quasar-app-static` (phải unique toàn cầu).
-   - **Region**: Chọn region gần bạn (ví dụ: `us-east-1`).
-   - **Block all public access**: Bỏ chọn để cho phép truy cập public (cần cho static website).
-   - **Enable ACLs**: Bật để quản lý quyền truy cập.
-3. Sau khi tạo bucket:
-   - Vào **Properties** > **Static website hosting**:
-     - Enable: Bật.
-     - Index document: `index.html`.
-     - Error document: `index.html` (để hỗ trợ Vue Router history mode).
-   - Vào **Permissions** > **Bucket policy**:
-     - Dán policy sau để cho phép public read:
-       ```json
-       {
-         "Version": "2012-10-17",
-         "Statement": [
-           {
-             "Sid": "PublicReadGetObject",
-             "Effect": "Allow",
-             "Principal": "*",
-             "Action": "s3:GetObject",
-             "Resource": "arn:aws:s3:::my-quasar-app-static/*"
-           }
-         ]
-       }
+   - Đăng nhập vào AWS Console.
+   - Tạo mới EC2 instance với các tùy chọn:
+     - **Instance type**: Tùy chọn miễn phí (ví dụ: t2.micro).
+     - **OS**: Ubuntu 20.04.
+     - **Security group**: Tạo mới và cho phép HTTP và HTTPS.
+     - **Key pair**: Tạo mới và tải xuống private key.
+
+2. **Đăng nhập vào EC2**:
+
+   - Sử dụng private key để SSH vào instance.
+     ```bash
+     ssh -i <private-key>.pem ubuntu@<ec2-public-ip>
+     ```
+   - Cấu hình SSH để sử dụng private key:
+
+     ```bash
+     sudo nano /etc/ssh/sshd_config
+     ```
+
+     - Đảm bảo có dòng không bị comment:
+       ```bash
+       PubkeyAuthentication yes
+       AuthorizedKeysFile .ssh/authorized_keys
+       ```
+     - Khởi động lại SSH:
+
+       ```bash
+       sudo systemctl restart sshd
        ```
 
-### 2.2. Tạo CloudFront distribution
+   - Kiểm tra trạng thái SSH:
 
-1. Vào **CloudFront** > **Create distribution**:
-   - **Origin**:
-     - Origin domain: Chọn S3 bucket vừa tạo (`my-quasar-app-static.s3.amazonaws.com`).
-     - Origin access: Chọn **Legacy access identities** (nếu cần, tạo OAI và cập nhật bucket policy theo hướng dẫn của AWS).
-   - **Viewer protocol policy**: Redirect HTTP to HTTPS.
-   - **Default root object**: `index.html`.
-   - **Price class**: Use all edge locations (hoặc chỉ US/Europe để tiết kiệm chi phí).
-   - **Cache behavior**:
-     - Cache key and origin requests: Use **Legacy cache settings**.
-     - Object caching: Customize, set **Minimum TTL** và **Default TTL** thành `0` (để dễ invalidate cache khi deploy mới).
-2. Sau khi tạo, ghi lại **Distribution domain name** (ví dụ: `d123456789.cloudfront.net`).
-
-3. **Cập nhật S3 bucket policy** (nếu dùng OAI):
-
-   - Vào S3 bucket > **Permissions** > **Bucket policy**:
-     ```json
-     {
-       "Version": "2012-10-17",
-       "Statement": [
-         {
-           "Sid": "AllowCloudFrontAccess",
-           "Effect": "Allow",
-           "Principal": {
-             "AWS": "arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity <OAI-ID>"
-           },
-           "Action": "s3:GetObject",
-           "Resource": "arn:aws:s3:::my-quasar-app-static/*"
-         }
-       ]
-     }
+     ```bash
+     sudo systemctl status sshd
      ```
-   - Thay `<OAI-ID>` bằng ID của OAI bạn tạo trong CloudFront.
 
-4. **Kiểm tra**:
-   - Truy cập CloudFront URL (ví dụ: `https://d123456789.cloudfront.net`) sau vài phút để đảm bảo cấu hình hoạt động.
+     Đảm bảo SSH đang chạy active (running) :
+
+     Ví dụ:
+
+     ```bash
+     ● ssh.service - OpenBSD Secure Shell server
+     Loaded: loaded (/lib/systemd/system/ssh.service; enabled; vendor preset: enabled)
+     Drop-In: /usr/lib/systemd/system/ssh.service.d
+     └─ec2-instance-connect.conf
+     Active: active (running) since Mon 2025-04-14 03:54:13 UTC; 14s ago
+     Docs: man:sshd(8)
+     man:sshd_config(5)
+     Process: 1412 ExecStartPre=/usr/sbin/sshd -t (code=exited, status=0/SUCCESS)
+     Main PID: 1413 (sshd)
+     Tasks: 1 (limit: 1129)
+     Memory: 1.7M
+     CPU: 19ms
+     CGroup: /system.slice/ssh.service
+     └─1413 "sshd: /usr/sbin/sshd -D -o AuthorizedKeysCommand /usr/share/ec2-instance-connect/eic_run_authorized_keys %u %f -o AuthorizedKeysComm>
+     ```
+
+3. **Cài đặt Nginx và cấu hình**:
+
+   - Cài đặt Nginx:
+     ```bash
+     sudo apt update
+     sudo apt install nginx -y
+     ```
+   - Khởi động Nginx:
+
+     ```bash
+     sudo systemctl start nginx
+     ```
+
+   - Bật Nginx để khởi chạy cùng hệ thống:
+
+     ```bash
+     sudo systemctl enable nginx
+     ```
+
+   - Kiểm tra trạng thái Nginx:
+
+     ```bash
+     sudo systemctl status nginx
+     ```
+
+     Ví dụ:
+
+     ```bash
+     ● nginx.service - A high performance web server and a reverse proxy server
+     Loaded: loaded (/lib/systemd/system/nginx.service; enabled; vendor preset: enabled)
+     Active: active (running) since Mon 2025-04-14 04:00:49 UTC; 27s ago
+       Docs: man:nginx(8)
+     Main PID: 8539 (nginx)
+      Tasks: 2 (limit: 1129)
+     Memory: 3.2M
+        CPU: 19ms
+     CGroup: /system.slice/nginx.service
+             ├─8539 "nginx: master process /usr/sbin/nginx -g daemon on; master_process on;"
+             └─8542 "nginx: worker process" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" ""
+     ```
+
+4. **Mở port 80 (nếu chưa mở)**:
+
+Vào AWS EC2 Console → Security Groups → Chọn security group đang dùng
+
+Add rule:
+| Type | Protocol | Port | Source |
+| --- | --- | --- | --- |
+| Custom TCP | TCP | 80 | 0.0.0.0/0 |
+| Custom TCP | TCP | 443 | 0.0.0.0/0 |
+
+Truy cập IP EC2 qua trình duyệt:
+
+```bash
+http://<ec2-public-ip>
+```
+
+![alt text](images/nginx.png)
 
 ---
 
 ## Bước 3: Tích hợp CI/CD với GitHub Actions
 
-### 3.1. Tạo IAM User cho CI/CD
+1. **Tạo repository GitHub**:
 
-1. Vào **IAM** > **Users** > **Add users**:
-   - **User name**: `quasar-cicd-user`.
-   - **Access type**: Programmatic access.
-2. Gắn policy:
-   - Chọn **Attach existing policies directly**.
-   - Gắn: `AmazonS3FullAccess` và `CloudFrontFullAccess` (hoặc tạo custom policy giới hạn chỉ bucket và distribution cụ thể).
-3. Lưu **Access Key ID** và **Secret Access Key** (tải file CSV hoặc ghi lại).
+   - Tạo repository mới trên GitHub.
+   - Push code lên repository.
 
-4. **Lưu credentials vào GitHub Secrets**:
-   - Vào GitHub repository > **Settings** > **Secrets and variables** > **Actions** > **New repository secret**:
-     - Thêm:
-       - `AWS_ACCESS_KEY_ID`: Dán Access Key ID.
-       - `AWS_SECRET_ACCESS_KEY`: Dán Secret Access Key.
-       - `AWS_REGION`: Region của bucket (ví dụ: `us-east-1`).
-       - `AWS_S3_BUCKET`: Tên bucket (`my-quasar-app-static`).
-       - `AWS_CLOUDFRONT_DISTRIBUTION_ID`: ID của CloudFront distribution (tìm trong CloudFront console, ví dụ: `E1A2B3C4D5E6F`).
-
-### 3.2. Tạo GitHub Actions workflow
-
-1. Trong project Quasar, tạo file:
-
-   ```bash
-   mkdir -p .github/workflows
-   touch .github/workflows/deploy.yml
-   ```
-
-2. Dán nội dung sau vào `.github/workflows/deploy.yml`:
-
-   ```yaml
-   name: Deploy Quasar to AWS S3 and CloudFront
-
-   on:
-     push:
-       branches:
-         - main
-
-   jobs:
-     deploy:
-       runs-on: ubuntu-latest
-
-       steps:
-         - name: Checkout code
-           uses: actions/checkout@v3
-
-         - name: Set up Node.js
-           uses: actions/setup-node@v3
-           with:
-             node-version: '18'
-
-         - name: Install dependencies
-           run: npm install
-
-         - name: Install Quasar CLI
-           run: npm install -g @quasar/cli
-
-         - name: Build Quasar app
-           run: quasar build
-
-         - name: Configure AWS credentials
-           uses: aws-actions/configure-aws-credentials@v2
-           with:
-             aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-             aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-             aws-region: ${{ secrets.AWS_REGION }}
-
-         - name: Sync files to S3
-           run: aws s3 sync dist/spa s3://${{ secrets.AWS_S3_BUCKET }} --delete
-
-         - name: Invalidate CloudFront cache
-           run: aws cloudfront create-invalidation --distribution-id ${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID }} --paths "/*"
-   ```
-
-3. **Giải thích workflow**:
-
-   - **Trigger**: Chạy khi push code lên nhánh `main`.
-   - **Steps**:
-     - Checkout code từ repository.
-     - Cài Node.js v18.
-     - Cài dependencies và Quasar CLI.
-     - Build project Quasar (tạo thư mục `dist/spa`).
-     - Cấu hình AWS credentials từ GitHub Secrets.
-     - Đồng bộ thư mục `dist/spa` lên S3 bucket (xóa file cũ với `--delete`).
-     - Invalidate cache CloudFront để cập nhật nội dung mới.
-
-4. **Commit và push workflow**:
-
-   ```bash
-   git add .github/workflows/deploy.yml
-   git commit -m "Add GitHub Actions for AWS deployment"
-   git push origin main
-   ```
-
-5. **Kiểm tra pipeline**:
-   - Vào GitHub repository > **Actions** tab.
-   - Xem workflow `Deploy Quasar to AWS S3 and CloudFront` chạy.
-   - Nếu thành công, truy cập CloudFront URL để thấy ứng dụng live.
-
----
-
-## Bước 4: Cấu hình tùy chọn (Optional)
-
-### 4.1. Thêm custom domain
-
-1. Mua domain qua **Route 53** hoặc nhà cung cấp khác (GoDaddy, Namecheap).
-2. Trong **CloudFront**:
-   - Edit distribution > **Alternate domain name (CNAME)**: Thêm domain (ví dụ: `www.myquasarapp.com`).
-   - **Custom SSL certificate**: Tạo certificate miễn phí qua **AWS Certificate Manager (ACM)** ở region `us-east-1`.
-3. Trong **Route 53**:
-   - Tạo **Hosted Zone** cho domain.
-   - Tạo record:
-     - Type: A.
-     - Alias: Chọn CloudFront distribution.
-4. Cập nhật DNS tại nhà cung cấp domain (nếu không dùng Route 53) để trỏ về CloudFront.
-
-### 4.2. Tối ưu chi phí
-
-- **Free Tier**:
-  - S3: 5GB storage, 20K GET requests/tháng.
-  - CloudFront: 1TB data transfer out, 10M requests/tháng trong 12 tháng.
-- **Giảm chi phí**:
-  - Dùng **S3 Standard-Infrequent Access** nếu lưu file ít truy cập.
-  - Tắt CloudFront distribution khi không dùng (không có Free Tier cho idle distributions).
-  - Theo dõi chi phí qua **AWS Budgets** (đặt cảnh báo $5/tháng).
-- **Dự tính chi phí** (với Free Tier):
-  - S3: ~$0 (1GB storage, 10K requests).
-  - CloudFront: ~$0 (dưới 1TB transfer).
-  - Route 53: $0.50/zone/tháng (nếu dùng custom domain).
-  - Tổng: ~$0.50/tháng nếu tối ưu.
-
----
-
-## Bước 5: Kiểm tra và bảo trì
-
-1. **Kiểm tra ứng dụng**:
-
-   - Truy cập CloudFront URL hoặc custom domain.
-   - Đảm bảo Vue Router hoạt động (history mode cần `index.html` cho error document).
-
-2. **Cập nhật code**:
-
-   - Chỉnh sửa code trong `src` (ví dụ: thêm component mới).
-   - Push lên `main`:
-     ```bash
-     git add .
-     git commit -m "Update UI"
-     git push origin main
-     ```
-   - GitHub Actions sẽ tự động build và deploy.
-
-3. **Monitoring**:
-   - Dùng **CloudWatch** để theo dõi S3 và CloudFront metrics.
-   - Kiểm tra **GitHub Actions logs** nếu deploy lỗi.
-
----
-
-## Lưu ý và khắc phục sự cố
-
-- **Lỗi S3 permission**:
-  - Kiểm tra bucket policy và IAM user permissions.
-  - Đảm bảo `AWS_ACCESS_KEY_ID` và `AWS_SECRET_ACCESS_KEY` đúng trong GitHub Secrets.
-- **CloudFront không cập nhật**:
-  - Đợi 5-10 phút sau khi invalidate cache.
-  - Kiểm tra lệnh `aws cloudfront create-invalidation` trong workflow.
-- **Vue Router không hoạt động**:
-  - Đảm bảo S
+2. **Tạo GitHub Actions**:
