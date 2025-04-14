@@ -1,44 +1,67 @@
 <template>
-  <q-layout view="lHh Lpr lFf">
-    <q-header elevated>
+  <q-layout view="hHh Lpr fFf">
+    <!-- HEADER -->
+    <q-header class="bg-white text-grey-8 shadow-1">
       <q-toolbar>
-        <q-btn
-          flat
-          dense
-          round
-          icon="menu"
-          aria-label="Menu"
-          @click="toggleLeftDrawer"
-        />
-
-        <q-toolbar-title>
-          Quasar App
+        <q-btn flat dense round icon="menu" @click="leftDrawerOpen = !leftDrawerOpen" />
+        <q-toolbar-title class="text-weight-bold text-primary">
+          MultiLang Dashboard
         </q-toolbar-title>
+        <q-space />
 
-        <div>Quasar v{{ $q.version }}</div>
+        <!-- Select Source Language -->
+        <q-select
+          options-dense
+          popup-content-class="bg-grey-2 text-black"
+          v-model="sourceLanguage"
+          :options="languageOptions"
+          label="Source"
+          emit-value
+          map-options
+          dense
+          borderless
+          class="select-style"
+        >
+          <template #prepend>
+            <q-icon name="public" color="white" />
+          </template>
+        </q-select>
+
+        <!-- Select Native Language -->
+        <q-select
+          options-dense
+          popup-content-class="bg-grey-2 text-black"
+          v-model="nativeLanguage"
+          :options="languageOptions"
+          label="Native"
+          emit-value
+          map-options
+          dense
+          borderless
+          class="select-style"
+        >
+          <template #prepend>
+            <q-icon name="translate" color="white" />
+          </template>
+        </q-select>
       </q-toolbar>
     </q-header>
 
-    <q-drawer
-      v-model="leftDrawerOpen"
-      show-if-above
-      bordered
-    >
+    <!-- SIDEBAR -->
+    <q-drawer show-if-above v-model="leftDrawerOpen" bordered class="bg-grey-1">
       <q-list>
-        <q-item-label
-          header
-        >
-          Essential Links
-        </q-item-label>
-
-        <EssentialLink
-          v-for="link in linksList"
-          :key="link.title"
-          v-bind="link"
-        />
+        <SidebarItem to="/" icon="fas fa-home" label="Trang chủ" />
+        <SidebarItem to="/topic" icon="fas fa-book" label="Chủ đề" />
+        <SidebarItem to="/lesson" icon="fas fa-book" label="Bài học" />
+        <SidebarItem to="/task" icon="fas fa-book" label="Nhiệm vụ" />
+        <SidebarItem to="/vocabulary" icon="fas fa-book-open" label="Vocabulary" />
+        <SidebarItem to="/dialog" icon="fas fa-comments" label="Dialog" />
+        <SidebarItem to="/story" icon="fas fa-book" label="Story" />
+        <SidebarItem to="/song" icon="fas fa-music" label="Song" />
       </q-list>
     </q-drawer>
 
+    <!-- CONTENT -->
     <q-page-container>
       <router-view />
     </q-page-container>
@@ -46,57 +69,24 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import EssentialLink from 'components/EssentialLink.vue'
-
-const linksList = [
-  {
-    title: 'Docs',
-    caption: 'quasar.dev',
-    icon: 'school',
-    link: 'https://quasar.dev'
-  },
-  {
-    title: 'Github',
-    caption: 'github.com/quasarframework',
-    icon: 'code',
-    link: 'https://github.com/quasarframework'
-  },
-  {
-    title: 'Discord Chat Channel',
-    caption: 'chat.quasar.dev',
-    icon: 'chat',
-    link: 'https://chat.quasar.dev'
-  },
-  {
-    title: 'Forum',
-    caption: 'forum.quasar.dev',
-    icon: 'record_voice_over',
-    link: 'https://forum.quasar.dev'
-  },
-  {
-    title: 'Twitter',
-    caption: '@quasarframework',
-    icon: 'rss_feed',
-    link: 'https://twitter.quasar.dev'
-  },
-  {
-    title: 'Facebook',
-    caption: '@QuasarFramework',
-    icon: 'public',
-    link: 'https://facebook.quasar.dev'
-  },
-  {
-    title: 'Quasar Awesome',
-    caption: 'Community Quasar projects',
-    icon: 'favorite',
-    link: 'https://awesome.quasar.dev'
-  }
-]
+import { ref, watch } from 'vue'
+import { languageOptions } from 'src/constants/language'
+import { useLanguageStore } from 'src/stores/language'
+import SidebarItem from 'src/components/SidebarItem.vue'
 
 const leftDrawerOpen = ref(false)
+const languageStore = useLanguageStore()
 
-function toggleLeftDrawer () {
-  leftDrawerOpen.value = !leftDrawerOpen.value
-}
+const sourceLanguage = ref(languageStore.sourceLanguage)
+const nativeLanguage = ref(languageStore.nativeLanguage)
+
+watch(sourceLanguage, (newVal) => {
+  languageStore.setSourceLanguage(newVal)
+})
+
+watch(nativeLanguage, (newVal) => {
+  languageStore.setNativeLanguage(newVal)
+})
 </script>
+
+<style scoped></style>
