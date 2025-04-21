@@ -1,20 +1,21 @@
 <template>
-  <q-input
-    v-model="topicStore.searchQuery"
-    @update:model-value="topicStore.updateSearchQuery"
-    placeholder="Search topics..."
-    dense
-    outlined
-    bg-color="white"
-    color="primary"
-    class="fb-input"
-    style="width: 400px;"
-    clearable
-  >
-    <template v-slot:prepend>
-      <q-icon name="search" />
-    </template>
-  </q-input>
+  <div class="col-5">
+    <q-input
+      v-model="topicStore.searchQuery"
+      @update:model-value="topicStore.updateSearchQuery"
+      placeholder="Search topics..."
+      dense
+      outlined
+      bg-color="white"
+      color="primary"
+      class="fb-input"
+      clearable
+    >
+      <template v-slot:prepend>
+        <q-icon name="search" />
+      </template>
+    </q-input>
+  </div>
 </template>
 
 <script setup>
@@ -25,7 +26,7 @@ const topicStore = useTopicStore();
 
 <style scoped>
 .fb-input {
-  border-radius: 10px;
+  border-radius: 4px; /* Đồng bộ với TopicForm */
   background: #ffffff;
   border: 1px solid #d1d5db;
   color: #1f2a44;
@@ -37,9 +38,15 @@ const topicStore = useTopicStore();
   border-color: #3b82f6;
 }
 
+.dark .fb-input {
+  background: #4b5563;
+  border-color: #6b7280;
+  color: #e5e7eb;
+}
+
 @media (max-width: 768px) {
   .fb-input {
-    width: 100% !important;
+    width: 100%;
   }
 }
 </style>

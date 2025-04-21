@@ -1,141 +1,255 @@
 <template>
-  <div>
-    <!-- Preview mode -->
-    <div v-if="!topicStore.isCreatingNew && topicStore.selectedTopic && !topicStore.isEditing" class="preview-mode">
-      <q-carousel
-        v-model="carouselSlide"
-        transition-prev="fade"
-        transition-next="fade"
-        animated
-        control-color="primary"
-        class="rounded"
-        style="height: 400px;"
-      >
-        <q-carousel-slide
-          :key="topicStore.selectedTopic.id"
-          :name="0"
-          :img-src="topicStore.selectedTopic.image"
-          style="object-fit: cover;"
-        />
-      </q-carousel>
-      <div class="q-mt-md">
-        <h3 class="topic-name">{{ topicStore.selectedTopic.name }}</h3>
-      </div>
-      <div class="row q-mt-md items-center">
-        <q-btn
-          round
-          icon="edit"
-          class="q-mr-sm fb-btn"
-          color="primary"
-          @click="topicStore.startEdit()"
-        >
-          <q-tooltip>Edit</q-tooltip>
-        </q-btn>
-        <q-btn
-          round
-          icon="delete"
-          class="fb-btn negative"
-          color="red"
-          @click="confirmDelete"
-        >
-          <q-tooltip>Delete</q-tooltip>
-        </q-btn>
-        <q-btn
-          round
-          icon="add"
-          class="q-ml-auto fb-btn"
-          color="primary"
-          @click="topicStore.startCreateNew()"
-        >
-          <q-tooltip>Create New</q-tooltip>
-        </q-btn>
-      </div>
-    </div>
-
-    <!-- Create or Edit mode -->
-    <div v-else class="create-mode">
-      <div class="row items-center q-mb-md">
-        <q-input
-          v-model="topicStore.topicName"
-          :label="topicStore.isEditing ? 'Edit Topic Name' : 'Topic Name'"
-          class="fb-input col"
-          dense
-          outlined
-          bg-color="white"
-          color="primary"
-        />
-        <q-btn
-          round
-          :icon="topicStore.isEditing ? 'done' : 'save'"
-          class="fb-btn q-ml-sm"
-          color="primary"
-          :disable="!topicStore.topicName || (!topicStore.previewImage && !topicStore.isEditing)"
-          @click="topicStore.isEditing ? topicStore.saveEdit() : topicStore.saveTopic()"
-        >
-          <q-tooltip>{{ topicStore.isEditing ? 'Save Edit' : 'Save' }}</q-tooltip>
-        </q-btn>
-      </div>
-      <div
-        class="upload-area q-pa-md rounded"
-        role="button"
-        aria-label="Upload image"
-        tabindex="0"
-        @dragover.prevent
-        @dragenter.prevent
-        @drop.prevent="onFileDrop($event)"
-        @keyup.enter="$refs.fileInput.click()"
-      >
-        <div v-if="topicStore.previewImage || (topicStore.isEditing && topicStore.selectedTopic.image)" class="preview">
-          <q-img
-            :src="topicStore.previewImage || topicStore.selectedTopic.image"
-            alt="Image Preview"
-            class="rounded"
-            style="max-height: 200px; width: 100%; object-fit: cover; display: block;"
-
-          />
-        </div>
+  <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+    <q-card class="no-shadow" bordered>
+      <div class="q-pa-sm">
+        <!-- Preview mode -->
         <div
-          v-else
-          class="upload-placeholder text-center"
-          @click="$refs.fileInput.click()"
-          @dragover.prevent
-          @dragenter.prevent
+          v-if="!topicStore.isCreatingNew && topicStore.selectedTopic && !topicStore.isEditing"
+          class="preview-mode"
         >
-          <q-icon name="cloud_upload" size="xl" class="fb-icon" />
-          <p class="q-mb-sm text-grey-8">Drag & drop or click to upload</p>
-          <input
-            ref="fileInput"
-            type="file"
-            accept="image/*"
-            class="hidden-file-input"
-            aria-label="Upload topic image"
-            @change="onFileChange($event.target.files[0])"
-            style="display: none"
-          />
+          <div class="row justify-end q-mb-md">
+            <q-btn
+              flat
+              icon="add"
+              label="Create New"
+              color="primary"
+              class="fb-btn fb-btn-flat q-mr-sm"
+              @click="topicStore.startCreateNew()"
+            >
+              <q-tooltip>Create New</q-tooltip>
+            </q-btn>
+            <q-btn
+              flat
+              icon="edit"
+              label="Edit"
+              color="primary"
+              class="fb-btn fb-btn-flat q-mr-sm"
+              @click="topicStore.startEdit()"
+            >
+              <q-tooltip>Edit</q-tooltip>
+            </q-btn>
+            <q-btn
+              flat
+              icon="delete"
+              label="Delete"
+              color="red"
+              class="fb-btn fb-btn-flat"
+              @click="confirmDelete"
+            >
+              <q-tooltip>Delete</q-tooltip>
+            </q-btn>
+          </div>
+          <div class="topic-content">
+            <h3 class="topic-name q-mb-sm">{{ topicStore.selectedTopic.name }}</h3>
+            <p class="topic-desc q-mb-md">
+              {{ topicStore.selectedTopic.description || 'No description' }}
+            </p>
+
+            <!-- Lesson table or form -->
+            <div v-if="!topicStore.isCreatingLesson && !topicStore.isEditingLesson">
+              <q-table
+                :rows="topicStore.selectedTopic?.lessons || []"
+                :columns="lessonColumns"
+                row-key="id"
+                class="lesson-table"
+                flat
+                bordered
+                dense
+              >
+                <template v-slot:body-cell-imageURL="props">
+                  <q-td>
+                    <q-img
+                      v-if="props.row.imageURL"
+                      :src="props.row.imageURL"
+                      style="width: 50px; height: 50px;"
+                      placeholder-src="https://via.placeholder.com/50"
+                    />
+                    <span v-else>No image</span>
+                  </q-td>
+                </template>
+                <template v-slot:body-cell-status="props">
+                  <q-td>
+                    <q-badge
+                      :color="topicStore.getStatusColor(props.row.status)"
+                      text-color="white"
+                      style="font-size: 0.9rem;"
+                    >
+                      {{ props.row.status }}
+                    </q-badge>
+                  </q-td>
+                </template>
+                <template v-slot:body-cell-action="props">
+                  <q-td>
+                    <q-btn
+                      flat
+                      icon="edit"
+                      color="primary"
+                      class="fb-btn fb-btn-flat q-mr-sm"
+                      @click="topicStore.startEditLesson(props.row)"
+                    >
+                      <q-tooltip>Edit Lesson</q-tooltip>
+                    </q-btn>
+                    <q-btn
+                      flat
+                      icon="delete"
+                      color="red"
+                      class="fb-btn fb-btn-flat"
+                      @click="confirmDeleteLesson(props.row.id)"
+                    >
+                      <q-tooltip>Delete Lesson</q-tooltip>
+                    </q-btn>
+                  </q-td>
+                </template>
+                <template v-slot:bottom>
+                  <q-btn
+                    flat
+                    icon="add"
+                    label="Add Lesson"
+                    color="primary"
+                    class="fb-btn fb-btn-flat"
+                    @click="topicStore.startCreateLesson()"
+                  >
+                    <q-tooltip>Add New Lesson</q-tooltip>
+                  </q-btn>
+                </template>
+                <template v-slot:no-data>
+                  <div class="full-width row justify-center q-pa-md">
+                    <q-btn
+                      flat
+                      icon="add"
+                      label="Add Lesson"
+                      color="primary"
+                      class="fb-btn fb-btn-flat"
+                      @click="topicStore.startCreateLesson()"
+                    >
+                      <q-tooltip>Add New Lesson</q-tooltip>
+                    </q-btn>
+                  </div>
+                </template>
+              </q-table>
+            </div>
+            <div v-else class="lesson-form">
+              <div class="row justify-end q-mb-md">
+                <q-btn
+                  flat
+                  :icon="topicStore.isEditingLesson ? 'done' : 'save'"
+                  label="Save"
+                  color="primary"
+                  class="fb-btn fb-btn-flat q-mr-sm"
+                  :disable="!topicStore.lessonName"
+                  @click="topicStore.saveLesson()"
+                >
+                  <q-tooltip>{{ topicStore.isEditingLesson ? 'Save Lesson' : 'Save' }}</q-tooltip>
+                </q-btn>
+                <q-btn
+                  flat
+                  icon="close"
+                  label="Cancel"
+                  color="grey"
+                  class="fb-btn fb-btn-flat"
+                  @click="topicStore.cancelLesson()"
+                >
+                  <q-tooltip>Cancel</q-tooltip>
+                </q-btn>
+              </div>
+              <q-input
+                v-model="topicStore.lessonName"
+                :label="topicStore.isEditingLesson ? 'Edit Lesson Name' : 'Lesson Name'"
+                class="fb-input q-mb-sm"
+                dense
+                outlined
+                bg-color="white"
+                color="primary"
+              />
+              <q-input
+                v-model="topicStore.lessonImageURL"
+                :label="topicStore.isEditingLesson ? 'Edit Image URL' : 'Image URL'"
+                class="fb-input q-mb-sm"
+                dense
+                outlined
+                bg-color="white"
+                color="primary"
+              />
+              <q-select
+                v-model="topicStore.lessonStatus"
+                :options="topicStore.statusOptions.map(opt => opt.value)"
+                :label="topicStore.isEditingLesson ? 'Edit Status' : 'Status'"
+                class="fb-input q-mb-md"
+                dense
+                outlined
+                bg-color="white"
+                color="primary"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Create or Edit Topic mode -->
+        <div v-else class="create-mode">
+          <div class="row justify-end q-mb-md">
+            <q-btn
+              flat
+              :icon="topicStore.isEditing ? 'done' : 'save'"
+              label="Save"
+              color="primary"
+              class="fb-btn fb-btn-flat q-mr-sm"
+              :disable="!topicStore.topicName"
+              @click="topicStore.isEditing ? topicStore.saveEdit() : topicStore.saveTopic()"
+            >
+              <q-tooltip>{{ topicStore.isEditing ? 'Save Edit' : 'Save' }}</q-tooltip>
+            </q-btn>
+            <q-btn
+              flat
+              icon="close"
+              label="Cancel"
+              color="grey"
+              class="fb-btn fb-btn-flat"
+              @click="cancelEditOrCreate"
+            >
+              <q-tooltip>Cancel</q-tooltip>
+            </q-btn>
+          </div>
+          <div class="topic-content">
+            <q-input
+              v-model="topicStore.topicName"
+              :label="topicStore.isEditing ? 'Edit Topic Name' : 'Topic Name'"
+              class="fb-input q-mb-sm"
+              dense
+              outlined
+              bg-color="white"
+              color="primary"
+            />
+            <q-input
+              v-model="topicStore.description"
+              :label="topicStore.isEditing ? 'Edit Description' : 'Description'"
+              class="fb-input q-mb-md description"
+              dense
+              outlined
+              bg-color="white"
+              color="primary"
+              type="textarea"
+            />
+          </div>
         </div>
       </div>
-    </div>
+    </q-card>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
 import { useQuasar } from 'quasar';
 import { useTopicStore } from '../../stores/topicStore';
 
 const $q = useQuasar();
 const topicStore = useTopicStore();
-const carouselSlide = ref(0);
 
-const onFileChange = (file) => {
-  console.log('File selected:', file);
-  topicStore.handleFile(file);
-};
-
-const onFileDrop = (event) => {
-  console.log('File dropped:', event.dataTransfer.files[0]);
-  topicStore.handleFile(event.dataTransfer.files[0]);
-};
+// Cột của bảng lesson
+const lessonColumns = [
+  { name: 'imageURL', label: 'Image', field: 'imageURL', align: 'left' },
+  { name: 'name', label: 'Name', field: 'name', align: 'left' },
+  { name: 'status', label: 'Status', field: 'status', align: 'left' },
+  { name: 'action', label: 'Action', field: 'action', align: 'right' },
+];
 
 const confirmDelete = () => {
   if (topicStore.selectedTopic) {
@@ -148,11 +262,56 @@ const confirmDelete = () => {
     });
   }
 };
+
+const confirmDeleteLesson = (lessonId) => {
+  $q.dialog({
+    title: 'Confirm Delete',
+    message: 'Delete this lesson?',
+    cancel: true,
+  }).onOk(() => {
+    topicStore.deleteLesson(lessonId);
+  });
+};
+
+const cancelEditOrCreate = () => {
+  if (topicStore.isEditing) {
+    topicStore.cancelEdit();
+  } else if (topicStore.isCreatingNew) {
+    topicStore.cancelCreate();
+  }
+};
 </script>
 
 <style scoped>
+.q-card {
+  border-radius: 8px;
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+}
+
+.topic-content {
+  padding: 8px;
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+.topic-name {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #1f2a44;
+}
+
+.topic-desc {
+  font-size: 0.875rem;
+  color: #666;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .fb-input {
-  border-radius: 10px;
+  border-radius: 4px;
   background: #ffffff;
   border: 1px solid #d1d5db;
   color: #1f2a44;
@@ -164,83 +323,114 @@ const confirmDelete = () => {
   border-color: #3b82f6;
 }
 
+.description {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lesson-table {
+  margin-top: 16px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.lesson-table :deep(.q-table) {
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+}
+
+.lesson-table :deep(.q-table th) {
+  background: #f0f0f0;
+  color: #1f2a44;
+  font-weight: 600;
+}
+
+.lesson-table :deep(.q-table td) {
+  color: #1f2a44;
+}
+
+.lesson-table :deep(.q-table tr:hover) {
+  background: #f0f0f0;
+}
+
+.lesson-form {
+  margin-top: 16px;
+  padding: 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  background: #ffffff;
+}
+
 .fb-btn {
-  border-radius: 50%;
-  padding: 10px;
-  background: #3b82f6;
-  color: #ffffff;
+  border-radius: 4px;
+  padding: 8px 16px;
+  font-weight: 500;
+  text-transform: none;
   transition: all 0.2s ease;
 }
 
-.fb-btn:hover {
-  background: #1d4ed8;
-  transform: scale(1.15);
+.fb-btn-flat {
+  background: transparent;
+  border: 1px solid;
 }
 
-.fb-btn[color="primary"] {
-  background: #3b82f6;
-}
-
-.fb-btn[color="primary"]:hover {
-  background: #1d4ed8;
-}
-
-.fb-btn[color="red"] {
-  background: #ef4444;
-}
-
-.fb-btn[color="red"]:hover {
-  background: #b91c1c;
-}
-
-.fb-icon {
-  color: #6b7280;
-  transition: color 0.2s ease;
-}
-
-.fb-icon:hover {
+.fb-btn-flat[color="primary"] {
+  border-color: #3b82f6;
   color: #3b82f6;
 }
 
-.topic-name {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #1f2a44;
-  letter-spacing: 0.5px;
+.fb-btn-flat[color="primary"]:hover {
+  background: #3b82f6;
+  color: #ffffff;
+  transform: translateY(-2px);
 }
 
-.upload-area {
-  background: #f8fafc;
-  border: 2px dashed #cbd5e0;
-  border-radius: 16px;
-  height: 50vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: border-color 0.2s ease;
+.fb-btn-flat[color="primary"][disabled] {
+  border-color: #a3bffa;
+  color: #a3bffa;
+  opacity: 0.6;
 }
 
-.upload-area:hover {
-  border-color: #3b82f6;
+.fb-btn-flat[color="red"] {
+  border-color: #ef4444;
+  color: #ef4444;
 }
 
-.upload-placeholder {
-  background: rgba(255, 255, 255, 0.7);
-  border-radius: 16px;
+.fb-btn-flat[color="red"]:hover {
+  background: #ef4444;
+  color: #ffffff;
+  transform: translateY(-2px);
 }
 
-.carousel {
-  border-radius: 16px;
-  overflow: hidden;
-  border: 1px solid #e4e7eb;
+.fb-btn-flat[color="grey"] {
+  border-color: #9ca3af;
+  color: #9ca3af;
 }
 
-.q-img {
-  transition: transform 0.3s ease;
+.fb-btn-flat[color="grey"]:hover {
+  background: #9ca3af;
+  color: #ffffff;
+  transform: translateY(-2px);
 }
 
-.q-img:hover {
-  transform: scale(1.03);
+/* Dark mode styles */
+.dark .q-card {
+  background: #374151;
+  border-color: #4b5563;
+}
+
+.dark .topic-content {
+  background: #374151;
+}
+
+.dark .topic-name {
+  color: #e5e7eb;
+}
+
+.dark .topic-desc {
+  color: #9ca3af;
 }
 
 .dark .fb-input {
@@ -249,7 +439,66 @@ const confirmDelete = () => {
   color: #e5e7eb;
 }
 
-.dark .topic-name {
+.dark .description {
+  color: #9ca3af;
+}
+
+.dark .lesson-table :deep(.q-table) {
+  background: #374151;
+  border-color: #4b5563;
+}
+
+.dark .lesson-table :deep(.q-table th) {
+  background: #4b5563;
   color: #e5e7eb;
+}
+
+.dark .lesson-table :deep(.q-table td) {
+  color: #e5e7eb;
+}
+
+.dark .lesson-table :deep(.q-table tr:hover) {
+  background: #4b5563;
+}
+
+.dark .lesson-form {
+  background: #374151;
+  border-color: #4b5563;
+}
+
+.dark .fb-btn-flat[color="primary"] {
+  border-color: #60a5fa;
+  color: #60a5fa;
+}
+
+.dark .fb-btn-flat[color="primary"]:hover {
+  background: #60a5fa;
+  color: #1f2a44;
+}
+
+.dark .fb-btn-flat[color="primary"][disabled] {
+  border-color: #93c5fd;
+  color: #93c5fd;
+  opacity: 0.6;
+}
+
+.dark .fb-btn-flat[color="red"] {
+  border-color: #f87171;
+  color: #f87171;
+}
+
+.dark .fb-btn-flat[color="red"]:hover {
+  background: #f87171;
+  color: #1f2a44;
+}
+
+.dark .fb-btn-flat[color="grey"] {
+  border-color: #d1d5db;
+  color: #d1d5db;
+}
+
+.dark .fb-btn-flat[color="grey"]:hover {
+  background: #d1d5db;
+  color: #1f2a44;
 }
 </style>

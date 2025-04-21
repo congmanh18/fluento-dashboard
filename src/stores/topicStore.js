@@ -1,7 +1,6 @@
-// src/stores/topicStore.js
 import { defineStore } from 'pinia';
 import { Notify } from 'quasar';
-import { debounce } from 'lodash'; // Import debounce từ lodash
+import { debounce } from 'lodash';
 
 export const useTopicStore = defineStore('topics', {
   state: () => ({
@@ -9,82 +8,174 @@ export const useTopicStore = defineStore('topics', {
       {
         id: 1,
         name: 'Nebula Hub',
-        image: 'https://tiki.vn/blog/wp-content/uploads/2023/01/oLkoHpw9cqRtLPTbg67bgtUvUdV1BnXRnAqqBZOVkEtPgf-_Ct3ADFJYXIjfDd0fTyECLEsWq5yZ2CCOEGxIsuHSmNNNUZQcnQT5-Ld6yoK19Q_Sphb0MmX64ga-O_TIPjItNkTL5ns4zqP1Z0OBzsIoeYKtcewnrjnVsw8vfG8uYwwCDkXaoozCrmH1kA.jpg',
+        description: 'This is the first topic',
         status: 'public',
         order: 1,
+        lessons: [
+          {
+            id: 1,
+            name: 'Topic 1 Lesson 1',
+            imageURL: 'https://picsum.photos/200/300',
+            status: 'public',
+            order: 1,
+          },
+          {
+            id: 2,
+            name: 'Topic 1 Lesson 2',
+            imageURL: 'https://picsum.photos/200/300',
+            status: 'pending',
+            order: 2,
+          },
+          {
+            id: 3,
+            name: 'Topic 1 Lesson 3',
+            imageURL: 'https://picsum.photos/200/300',
+            status: 'draft',
+            order: 3,
+          },
+        ],
       },
       {
         id: 2,
         name: 'Starfield',
-        image: 'https://tiki.vn/blog/wp-content/uploads/2023/01/oLkoHpw9cqRtLPTbg67bgtUvUdV1BnXRnAqqBZOVkEtPgf-_Ct3ADFJYXIjfDd0fTyECLEsWq5yZ2CCOEGxIsuHSmNNNUZQcnQT5-Ld6yoK19Q_Sphb0MmX64ga-O_TIPjItNkTL5ns4zqP1Z0OBzsIoeYKtcewnrjnVsw8vfG8uYwwCDkXaoozCrmH1kA.jpg',
+        description: 'This is the second topic',
         status: 'pending',
         order: 2,
+        lessons: [
+          {
+            id: 1,
+            name: 'Topic 2 Lesson 1',
+            imageURL: 'https://picsum.photos/200/300',
+            status: 'public',
+            order: 1,
+          },
+          {
+            id: 2,
+            name: 'Topic 2 Lesson 2',
+            imageURL: 'https://picsum.photos/200/300',
+            status: 'pending',
+            order: 2,
+          },
+          {
+            id: 3,
+            name: 'Topic 2 Lesson 3',
+            imageURL: 'https://picsum.photos/200/300',
+            status: 'draft',
+            order: 3,
+          },
+        ],
       },
       {
         id: 3,
         name: 'Quantum Core',
-        image: 'https://tiki.vn/blog/wp-content/uploads/2023/01/oLkoHpw9cqRtLPTbg67bgtUvUdV1BnXRnAqqBZOVkEtPgf-_Ct3ADFJYXIjfDd0fTyECLEsWq5yZ2CCOEGxIsuHSmNNNUZQcnQT5-Ld6yoK19Q_Sphb0MmX64ga-O_TIPjItNkTL5ns4zqP1Z0OBzsIoeYKtcewnrjnVsw8vfG8uYwwCDkXaoozCrmH1kA.jpg',
+        description: 'This is the third topic',
         status: 'draft',
         order: 3,
+        lessons: [
+          {
+            id: 1,
+            name: 'Topic 3 Lesson 1',
+            imageURL: 'https://picsum.photos/200/300',
+            status: 'public',
+            order: 1,
+          },
+          {
+            id: 2,
+            name: 'Topic 3 Lesson 2',
+            imageURL: 'https://picsum.photos/200/300',
+            status: 'pending',
+            order: 2,
+          },
+          {
+            id: 3,
+            name: 'Topic 3 Lesson 3',
+            imageURL: 'https://picsum.photos/200/300',
+            status: 'draft',
+            order: 3,
+          },
+        ],
       },
       {
         id: 4,
         name: 'Galactic Drift',
-        image: 'https://tiki.vn/blog/wp-content/uploads/2023/01/oLkoHpw9cqRtLPTbg67bgtUvUdV1BnXRnAqqBZOVkEtPgf-_Ct3ADFJYXIjfDd0fTyECLEsWq5yZ2CCOEGxIsuHSmNNNUZQcnQT5-Ld6yoK19Q_Sphb0MmX64ga-O_TIPjItNkTL5ns4zqP1Z0OBzsIoeYKtcewnrjnVsw8vfG8uYwwCDkXaoozCrmH1kA.jpg',
+        description: 'This is the fourth topic',
         status: 'rejected',
         order: 4,
+        lessons: [
+          {
+            id: 1,
+            name: 'Topic 4 Lesson 1',
+            imageURL: 'https://picsum.photos/200/300',
+            status: 'public',
+            order: 1,
+          },
+          {
+            id: 2,
+            name: 'Topic 4 Lesson 2',
+            imageURL: 'https://picsum.photos/200/300',
+            status: 'pending',
+            order: 2,
+          },
+          {
+            id: 3,
+            name: 'Topic 4 Lesson 3',
+            imageURL: 'https://picsum.photos/200/300',
+            status: 'draft',
+            order: 3,
+          },
+        ],
       },
       {
         id: 5,
         name: 'Cosmic Cascade',
-        image: 'https://tiki.vn/blog/wp-content/uploads/2023/01/oLkoHpw9cqRtLPTbg67bgtUvUdV1BnXRnAqqBZOVkEtPgf-_Ct3ADFJYXIjfDd0fTyECLEsWq5yZ2CCOEGxIsuHSmNNNUZQcnQT5-Ld6yoK19Q_Sphb0MmX64ga-O_TIPjItNkTL5ns4zqP1Z0OBzsIoeYKtcewnrjnVsw8vfG8uYwwCDkXaoozCrmH1kA.jpg',
+        description: 'This is the fifth topic',
         status: 'approved',
         order: 5,
       },
       {
         id: 6,
         name: 'Astral Veil',
-        image: 'https://tiki.vn/blog/wp-content/uploads/2023/01/oLkoHpw9cqRtLPTbg67bgtUvUdV1BnXRnAqqBZOVkEtPgf-_Ct3ADFJYXIjfDd0fTyECLEsWq5yZ2CCOEGxIsuHSmNNNUZQcnQT5-Ld6yoK19Q_Sphb0MmX64ga-O_TIPjItNkTL5ns4zqP1Z0OBzsIoeYKtcewnrjnVsw8vfG8uYwwCDkXaoozCrmH1kA.jpg',
+        description: 'This is the sixth topic',
         status: 'public',
         order: 6,
       },
       {
         id: 7,
         name: 'Stellar Nexus',
-        image: 'https://tiki.vn/blog/wp-content/uploads/2023/01/oLkoHpw9cqRtLPTbg67bgtUvUdV1BnXRnAqqBZOVkEtPgf-_Ct3ADFJYXIjfDd0fTyECLEsWq5yZ2CCOEGxIsuHSmNNNUZQcnQT5-Ld6yoK19Q_Sphb0MmX64ga-O_TIPjItNkTL5ns4zqP1Z0OBzsIoeYKtcewnrjnVsw8vfG8uYwwCDkXaoozCrmH1kA.jpg',
+        description: 'This is the seventh topic',
         status: 'approved',
         order: 7,
       },
       {
         id: 8,
         name: 'Lunar Pulse',
-        image: 'https://tiki.vn/blog/wp-content/uploads/2023/01/oLkoHpw9cqRtLPTbg67bgtUvUdV1BnXRnAqqBZOVkEtPgf-_Ct3ADFJYXIjfDd0fTyECLEsWq5yZ2CCOEGxIsuHSmNNNUZQcnQT5-Ld6yoK19Q_Sphb0MmX64ga-O_TIPjItNkTL5ns4zqP1Z0OBzsIoeYKtcewnrjnVsw8vfG8uYwwCDkXaoozCrmH1kA.jpg',
+        description: 'This is the eighth topic',
         status: 'pending',
         order: 8,
       },
       {
         id: 9,
         name: 'Orbit Shift',
-        image: 'https://tiki.vn/blog/wp-content/uploads/2023/01/oLkoHpw9cqRtLPTbg67bgtUvUdV1BnXRnAqqBZOVkEtPgf-_Ct3ADFJYXIjfDd0fTyECLEsWq5yZ2CCOEGxIsuHSmNNNUZQcnQT5-Ld6yoK19Q_Sphb0MmX64ga-O_TIPjItNkTL5ns4zqP1Z0OBzsIoeYKtcewnrjnVsw8vfG8uYwwCDkXaoozCrmH1kA.jpg',
+        description: 'This is the ninth topic',
         status: 'rejected',
         order: 9,
       },
       {
         id: 10,
         name: 'Cosmic Tide',
-        image: 'https://tiki.vn/blog/wp-content/uploads/2023/01/oLkoHpw9cqRtLPTbg67bgtUvUdV1BnXRnAqqBZOVkEtPgf-_Ct3ADFJYXIjfDd0fTyECLEsWq5yZ2CCOEGxIsuHSmNNNUZQcnQT5-Ld6yoK19Q_Sphb0MmX64ga-O_TIPjItNkTL5ns4zqP1Z0OBzsIoeYKtcewnrjnVsw8vfG8uYwwCDkXaoozCrmH1kA.jpg',
+        description: 'This is the tenth topic',
         status: 'draft',
         order: 10,
       },
-      // ... other initial topics
     ],
     selectedTopic: null,
     topicName: '',
-    previewImage: null,
+    description: '',
+    topicStatus: null,
     isCreatingNew: false,
     isEditing: false,
     searchQuery: '',
-    debouncedSearchQuery: '', // Thêm để lưu giá trị đã debounce
+    debouncedSearchQuery: '',
     statusFilter: null,
     statusOptions: [
       { label: 'All', value: null },
@@ -94,6 +185,58 @@ export const useTopicStore = defineStore('topics', {
       { label: 'Rejected', value: 'rejected' },
       { label: 'Approved', value: 'approved' },
     ],
+    // Lesson-related states
+    isCreatingLesson: false,
+    isEditingLesson: false,
+    lessonId: null,
+    lessonName: '',
+    lessonImageURL: '',
+    lessonStatus: 'draft',
+    // Lesson actions
+    startCreateLesson() {
+      this.isCreatingLesson = true;
+      this.lessonName = '';
+      this.lessonImageURL = '';
+      this.lessonStatus = 'draft';
+    },
+    startEditLesson(lesson) {
+      this.isEditingLesson = true;
+      this.lessonId = lesson.id;
+      this.lessonName = lesson.name;
+      this.lessonImageURL = lesson.imageURL;
+      this.lessonStatus = lesson.status;
+    },
+    saveLesson() {
+      if (!this.selectedTopic || !this.lessonName) return;
+      const lesson = {
+        id: this.isEditingLesson ? this.lessonId : Date.now(), // Giả lập ID
+        name: this.lessonName,
+        imageURL: this.lessonImageURL,
+        status: this.lessonStatus,
+      };
+      if (this.isEditingLesson) {
+        const lessonIndex = this.selectedTopic.lessons.findIndex(l => l.id === this.lessonId);
+        if (lessonIndex !== -1) {
+          this.selectedTopic.lessons[lessonIndex] = lesson;
+        }
+      } else {
+        this.selectedTopic.lessons.push(lesson);
+      }
+      this.cancelLesson();
+    },
+    deleteLesson(lessonId) {
+      if (this.selectedTopic) {
+        this.selectedTopic.lessons = this.selectedTopic.lessons.filter(l => l.id !== lessonId);
+      }
+    },
+    cancelLesson() {
+      this.isCreatingLesson = false;
+      this.isEditingLesson = false;
+      this.lessonId = null;
+      this.lessonName = '';
+      this.lessonImageURL = '';
+      this.lessonStatus = 'draft';
+    },
   }),
 
   getters: {
@@ -138,65 +281,38 @@ export const useTopicStore = defineStore('topics', {
     debounceSearch: debounce(function () {
       this.debouncedSearchQuery = this.searchQuery;
     }, 300),
-    // ... other actions (selectTopic, startCreateNew, startEdit, handleFile, saveTopic, saveEdit, deleteTopic, reorderTopics, resetForm)
     selectTopic(topic) {
       this.selectedTopic = { ...topic };
       this.topicName = topic.name;
-      this.previewImage = null;
+      this.description = topic.description;
+      this.topicStatus = topic.status;
       this.isCreatingNew = false;
       this.isEditing = false;
     },
     startCreateNew() {
       this.isCreatingNew = true;
+      this.isEditing = false;
       this.selectedTopic = null;
       this.topicName = '';
-      this.previewImage = null;
+      this.description = '';
+      this.topicStatus = 'draft';
     },
     startEdit() {
-      this.isEditing = true;
-      this.topicName = this.selectedTopic.name;
-      this.previewImage = this.selectedTopic.image;
-    },
-    handleFile(file) {
-      if (!file || !file.type.startsWith('image/')) {
-        Notify.create({
-          message: 'Please upload an image file!',
-          color: 'negative',
-          icon: 'error',
-          position: 'top',
-          timeout: 2000,
-        });
-        return;
+      if (this.selectedTopic) {
+        this.isEditing = true;
+        this.isCreatingNew = false;
+        this.topicName = this.selectedTopic.name;
+        this.description = this.selectedTopic.description;
+        this.topicStatus = this.selectedTopic.status;
       }
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        this.previewImage = e.target.result;
-        Notify.create({
-          message: 'Image preview updated!',
-          color: 'positive',
-          icon: 'check_circle',
-          position: 'top',
-          timeout: 2000,
-        });
-      };
-      reader.onerror = () => {
-        Notify.create({
-          message: 'Failed to read image file!',
-          color: 'negative',
-          icon: 'error',
-          position: 'top',
-          timeout: 2000,
-        });
-      };
-      reader.readAsDataURL(file);
     },
     saveTopic() {
-      if (this.topicName && this.previewImage) {
+      if (this.topicName) {
         const newTopic = {
           id: Date.now(),
           name: this.topicName,
-          image: this.previewImage,
-          status: 'draft',
+          description: this.description,
+          status: this.topicStatus || 'draft',
           order: this.topics.length + 1,
         };
         this.topics.push(newTopic);
@@ -210,7 +326,7 @@ export const useTopicStore = defineStore('topics', {
         });
       } else {
         Notify.create({
-          message: 'Please provide a topic name and image!',
+          message: 'Please provide a topic name!',
           color: 'negative',
           icon: 'error',
           position: 'top',
@@ -219,13 +335,16 @@ export const useTopicStore = defineStore('topics', {
       }
     },
     saveEdit() {
-      if (this.selectedTopic && this.topicName) {
+      if (this.selectedTopic && this.topicName)
+
+ {
         const index = this.topics.findIndex((t) => t.id === this.selectedTopic.id);
         if (index !== -1) {
           this.topics[index] = {
             ...this.topics[index],
             name: this.topicName,
-            image: this.previewImage || this.topics[index].image,
+            description: this.description,
+            status: this.topicStatus || this.topics[index].status,
           };
           this.selectedTopic = { ...this.topics[index] };
           this.resetForm();
@@ -279,6 +398,18 @@ export const useTopicStore = defineStore('topics', {
         });
       }
     },
+    cancelEdit() {
+      if (this.selectedTopic) {
+        this.topicName = this.selectedTopic.name;
+        this.description = this.selectedTopic.description;
+        this.topicStatus = this.selectedTopic.status;
+      }
+      this.isEditing = false;
+    },
+    cancelCreate() {
+      this.isCreatingNew = false;
+      this.resetForm();
+    },
     reorderTopics(newTopics) {
       this.topics = newTopics;
       this.topics.forEach((topic, index) => {
@@ -294,7 +425,8 @@ export const useTopicStore = defineStore('topics', {
     },
     resetForm() {
       this.topicName = '';
-      this.previewImage = null;
+      this.description = '';
+      this.topicStatus = null;
       this.isCreatingNew = false;
       this.isEditing = false;
       this.selectedTopic = null;

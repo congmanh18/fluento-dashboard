@@ -1,17 +1,15 @@
 <!-- src/components/TopicManagement.vue -->
 <template>
   <div class="q-pa-md fb-container" :class="{ 'dark': isDark }">
-    <div class="row items-center q-mb-lg">
-      <h2 class="q-my-none text-h5 text-weight-bold">Topic Management</h2>
+    <!-- <div class="row items-center q-mb-lg">
       <q-space />
-      <TopicSearch />
-    </div>
-
+    </div> -->
     <div class="row q-gutter-md no-wrap full-height">
-      <div class="col-8 q-pa-md fb-panel rounded shadow-1">
+      <div class="col-7 q-pa-md fb-panel rounded shadow-1">
         <TopicForm />
       </div>
-      <div class="col-4 q-pa-lg topic-list-container fb-panel-light rounded shadow-1">
+      <div class="col-5 q-pa-lg topic-list-container fb-panel-light rounded shadow-1">
+        <TopicSearch />
         <TopicList />
       </div>
     </div>
@@ -34,68 +32,76 @@ const isDark = ref($q.dark.isActive);
   background: #f5f7fa;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   min-height: 100vh;
-  padding: 24px;
+  padding: 16px;
   color: #1f2a44;
 }
 
 .full-height {
-  min-height: calc(100vh - 48px);
+  min-height: calc(100vh - 120px); /* Đảm bảo chiều cao đầy đủ */
 }
 
-.fb-panel {
-  background: #ffffff;
-  border: 1px solid #e4e7eb;
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+.topic-title {
+  font-size: 1.2rem; /* Đồng bộ với topic-name */
+  font-weight: 600;
+  color: #1f2a44;
 }
 
-.fb-panel:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
-}
-
-.fb-panel-light {
-  background: #fafafa;
-  border: 1px solid #e4e7eb;
-  border-radius: 16px;
-  height: calc(100vh - 48px);
-  overflow-y: auto;
+.topic-list-container {
+  max-height: calc(100vh - 120px); /* Giới hạn chiều cao */
+  overflow-y: auto; /* Cuộn dọc */
   scrollbar-width: thin;
   scrollbar-color: #94a3b8 #f1f5f9;
-  isolation: isolate;
 }
 
-.fb-panel-light::-webkit-scrollbar {
+.topic-list-container::-webkit-scrollbar {
   width: 10px;
 }
 
-.fb-panel-light::-webkit-scrollbar-track {
+.topic-list-container::-webkit-scrollbar-track {
   background: #f1f5f9;
   border-radius: 5px;
 }
 
-.fb-panel-light::-webkit-scrollbar-thumb {
+.topic-list-container::-webkit-scrollbar-thumb {
   background: #94a3b8;
   border-radius: 5px;
 }
 
+/* Dark mode */
+.dark .fb-container {
+  background: #1f2a44;
+  color: #e5e7eb;
+}
+
+.dark .topic-title {
+  color: #e5e7eb;
+}
+
+.dark .topic-list-container {
+  scrollbar-color: #6b7280 #374151;
+}
+
+.dark .topic-list-container::-webkit-scrollbar-track {
+  background: #374151;
+}
+
+.dark .topic-list-container::-webkit-scrollbar-thumb {
+  background: #6b7280;
+}
+
+/* Responsive */
 @media (max-width: 768px) {
   .fb-container {
-    padding: 16px;
+    padding: 12px;
   }
   .full-height {
     flex-direction: column;
   }
-  .col-8,
-  .col-4 {
+  .col-7,
+  .col-5 {
     width: 100%;
   }
-  .fb-panel {
-    margin-bottom: 16px;
-  }
-  .fb-panel-light {
-    height: auto;
+  .topic-list-container {
     max-height: 400px;
   }
 }
