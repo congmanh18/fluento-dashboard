@@ -8,13 +8,15 @@
   >
     <q-list>
       <SidebarItem to="/" icon="dashboard" label="Dashboard" />
+      <SidebarItem to="/Dashboard2" icon="dashboard" label="Dashboard2" />
+      <SidebarItem to="/Dashboard3" icon="dashboard" label="Dashboard3" />
       <SidebarGroup icon="people" label="User Management">
           <SidebarItem to="/users/list" icon="list" label="All Users" />
           <SidebarItem to="/users/roles" icon="security" label="Roles & Permissions" />
           <SidebarItem to="/users/invite" icon="person_add_alt" label="Invite User" />
           <SidebarItem to="/users/activity-log" icon="history" label="Activity Logs" />
       </SidebarGroup>
-      <SidebarGroup icon="menu_open" label="Content Overview">
+      <SidebarGroup icon="menu_open" label="Content Studio">
           <SidebarItem to="/content/topics" icon="topic" label="Topics" />
           <SidebarItem to="/content/lessons" icon="school" label="Lessons" />
           <SidebarGroup icon="school" label="Tasks">
