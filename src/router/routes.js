@@ -23,7 +23,7 @@ const routes = [
       {path: '/CardHeader', component: () => import('pages/CardHeader.vue')},
 
 
-      { path: 'content/topics', component: () => import('pages/content/TopicsPage.vue') },
+      { path: 'content/topics', component: () => import('src/pages/content/TopicsManagement.vue') },
       { path: 'content/lessons', component: () => import('pages/content/LessonsPage.vue') },
       { path: 'content/dialogs', component: () => import('pages/content/DialogsPage.vue') },
       { path: 'content/stories', component: () => import('pages/content/StoriesPage.vue') },

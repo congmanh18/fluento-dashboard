@@ -8,8 +8,8 @@
   >
     <q-list>
       <SidebarItem to="/" icon="dashboard" label="Dashboard" />
-      <SidebarItem to="/Dashboard2" icon="dashboard" label="Dashboard2" />
-      <SidebarItem to="/Dashboard3" icon="dashboard" label="Dashboard3" />
+      <!-- <SidebarItem to="/Dashboard2" icon="dashboard" label="Dashboard2" /> -->
+      <!-- <SidebarItem to="/Dashboard3" icon="dashboard" label="Dashboard3" /> -->
       <SidebarGroup icon="people" label="User Management">
           <SidebarItem to="/users/list" icon="list" label="All Users" />
           <SidebarItem to="/users/roles" icon="security" label="Roles & Permissions" />
@@ -17,29 +17,18 @@
           <SidebarItem to="/users/activity-log" icon="history" label="Activity Logs" />
       </SidebarGroup>
       <SidebarGroup icon="menu_open" label="Content Studio">
-          <SidebarItem to="/content/topics" icon="topic" label="Topics" />
-          <SidebarItem to="/content/lessons" icon="school" label="Lessons" />
-          <SidebarGroup icon="school" label="Tasks">
-            <SidebarItem to="/content/dialogs" icon="chat" label="Dialogs" />
-            <SidebarItem to="/content/stories" icon="book" label="Stories" />
-            <SidebarItem to="/content/vocabulary" icon="translate" label="Vocabulary" />
-          </SidebarGroup>
+          <SidebarItem to="/content/topics" icon="topic" label="Topic & Lesson" />
+          <!-- <SidebarItem to="/content/lessons" icon="school" label="Lessons" /> -->
+          <SidebarItem to="/content/dialogs" icon="chat" label="Dialogs" />
+          <SidebarItem to="/content/stories" icon="book" label="Stories" />
+          <SidebarItem to="/content/vocabulary" icon="translate" label="Vocabulary" />
       </SidebarGroup>
-      <SidebarGroup icon="check_circle" label="Approval Center">
-          <SidebarItem
-            to="/approval/pending-topics"
-            icon="hourglass_empty"
-            label="Pending Topics"
-          />
-          <SidebarItem
-            to="/approval/pending-lessons"
-            icon="hourglass_bottom"
-            label="Pending Lessons"
-          />
+      <!-- <SidebarGroup icon="check_circle" label="Approval Center">
+          <SidebarItem to="/approval/pending-topics" icon="hourglass_empty" label="Pending Topics"/>
+          <SidebarItem to="/approval/pending-lessons" icon="hourglass_bottom" label="Pending Lessons"/>
           <SidebarItem to="/approval/rejected" icon="cancel" label="Rejected" />
           <SidebarItem to="/approval/history" icon="history" label="Approval History" />
-        </SidebarGroup>
-
+      </SidebarGroup>
         <SidebarGroup icon="folder_open" label="Content Management">
           <SidebarItem to="/organize/create-topic" icon="add_circle" label="Create Topic" />
           <SidebarItem to="/organize/create-lesson" icon="note_add" label="Create Lesson" />
@@ -88,8 +77,10 @@
           <SidebarItem to="/notifications/alerts" icon="warning" label="System Alerts" />
           <SidebarItem to="/notifications/feedback" icon="feedback" label="User Feedback" />
           <SidebarItem to="/notifications/unread" icon="mark_email_unread" label="Unread" />
-        </SidebarGroup>
-        <SidebarGroup icon="menu_book" label="Guidelines & Docs">
+        </SidebarGroup> -->
+
+
+        <!-- <SidebarGroup icon="menu_book" label="Guidelines & Docs">
           <SidebarItem to="/docs/contributor" icon="edit" label="For Contributor" />
           <SidebarItem to="/docs/reviewer" icon="rule_folder" label="For Reviewer" />
           <SidebarItem to="/docs/style" icon="format_paint" label="Content Style Guide" />
@@ -106,7 +97,7 @@
           <SidebarItem to="/support/contact" icon="contact_support" label="Contact Requests" />
           <SidebarItem to="/support/resolved" icon="check_circle" label="Resolved" />
           <SidebarItem to="/support/faq" icon="help" label="FAQ Editor" />
-        </SidebarGroup>
+        </SidebarGroup> -->
     </q-list>
   </q-drawer>
 </template>

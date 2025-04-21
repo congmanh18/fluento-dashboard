@@ -8,15 +8,14 @@ export const useTopicStore = defineStore('topics', {
       {
         id: 1,
         name: 'Nebula Hub',
-        description: 'This is the first topic',
-        status: 'public',
+        status: 'draft',
         order: 1,
         lessons: [
           {
             id: 1,
             name: 'Topic 1 Lesson 1',
             imageURL: 'https://picsum.photos/200/300',
-            status: 'public',
+            status: 'draft',
             order: 1,
           },
           {
@@ -38,7 +37,6 @@ export const useTopicStore = defineStore('topics', {
       {
         id: 2,
         name: 'Starfield',
-        description: 'This is the second topic',
         status: 'pending',
         order: 2,
         lessons: [
@@ -46,7 +44,7 @@ export const useTopicStore = defineStore('topics', {
             id: 1,
             name: 'Topic 2 Lesson 1',
             imageURL: 'https://picsum.photos/200/300',
-            status: 'public',
+            status: 'draft',
             order: 1,
           },
           {
@@ -68,7 +66,6 @@ export const useTopicStore = defineStore('topics', {
       {
         id: 3,
         name: 'Quantum Core',
-        description: 'This is the third topic',
         status: 'draft',
         order: 3,
         lessons: [
@@ -76,7 +73,7 @@ export const useTopicStore = defineStore('topics', {
             id: 1,
             name: 'Topic 3 Lesson 1',
             imageURL: 'https://picsum.photos/200/300',
-            status: 'public',
+            status: 'draft',
             order: 1,
           },
           {
@@ -98,15 +95,14 @@ export const useTopicStore = defineStore('topics', {
       {
         id: 4,
         name: 'Galactic Drift',
-        description: 'This is the fourth topic',
-        status: 'rejected',
+        status: 'pending',
         order: 4,
         lessons: [
           {
             id: 1,
             name: 'Topic 4 Lesson 1',
             imageURL: 'https://picsum.photos/200/300',
-            status: 'public',
+            status: 'draft',
             order: 1,
           },
           {
@@ -128,49 +124,42 @@ export const useTopicStore = defineStore('topics', {
       {
         id: 5,
         name: 'Cosmic Cascade',
-        description: 'This is the fifth topic',
         status: 'approved',
         order: 5,
       },
       {
         id: 6,
         name: 'Astral Veil',
-        description: 'This is the sixth topic',
-        status: 'public',
+        status: 'draft',
         order: 6,
       },
       {
         id: 7,
         name: 'Stellar Nexus',
-        description: 'This is the seventh topic',
         status: 'approved',
         order: 7,
       },
       {
         id: 8,
         name: 'Lunar Pulse',
-        description: 'This is the eighth topic',
         status: 'pending',
         order: 8,
       },
       {
         id: 9,
         name: 'Orbit Shift',
-        description: 'This is the ninth topic',
-        status: 'rejected',
+        status: 'pending',
         order: 9,
       },
       {
         id: 10,
         name: 'Cosmic Tide',
-        description: 'This is the tenth topic',
         status: 'draft',
         order: 10,
       },
     ],
     selectedTopic: null,
     topicName: '',
-    description: '',
     topicStatus: null,
     isCreatingNew: false,
     isEditing: false,
@@ -179,10 +168,8 @@ export const useTopicStore = defineStore('topics', {
     statusFilter: null,
     statusOptions: [
       { label: 'All', value: null },
-      { label: 'Public', value: 'public' },
-      { label: 'Pending', value: 'pending' },
       { label: 'Draft', value: 'draft' },
-      { label: 'Rejected', value: 'rejected' },
+      { label: 'Pending', value: 'pending' },
       { label: 'Approved', value: 'approved' },
     ],
     // Lesson-related states
@@ -263,11 +250,9 @@ export const useTopicStore = defineStore('topics', {
     },
     getStatusColor: () => (status) => {
       switch (status) {
-        case 'public': return 'green';
-        case 'pending': return 'orange';
         case 'draft': return 'grey';
-        case 'rejected': return 'red';
-        case 'approved': return 'blue';
+        case 'pending': return 'orange';
+        case 'approved': return 'green';
         default: return 'grey';
       }
     },
@@ -284,7 +269,6 @@ export const useTopicStore = defineStore('topics', {
     selectTopic(topic) {
       this.selectedTopic = { ...topic };
       this.topicName = topic.name;
-      this.description = topic.description;
       this.topicStatus = topic.status;
       this.isCreatingNew = false;
       this.isEditing = false;
@@ -294,7 +278,6 @@ export const useTopicStore = defineStore('topics', {
       this.isEditing = false;
       this.selectedTopic = null;
       this.topicName = '';
-      this.description = '';
       this.topicStatus = 'draft';
     },
     startEdit() {
@@ -302,7 +285,6 @@ export const useTopicStore = defineStore('topics', {
         this.isEditing = true;
         this.isCreatingNew = false;
         this.topicName = this.selectedTopic.name;
-        this.description = this.selectedTopic.description;
         this.topicStatus = this.selectedTopic.status;
       }
     },
@@ -311,7 +293,6 @@ export const useTopicStore = defineStore('topics', {
         const newTopic = {
           id: Date.now(),
           name: this.topicName,
-          description: this.description,
           status: this.topicStatus || 'draft',
           order: this.topics.length + 1,
         };
@@ -343,7 +324,6 @@ export const useTopicStore = defineStore('topics', {
           this.topics[index] = {
             ...this.topics[index],
             name: this.topicName,
-            description: this.description,
             status: this.topicStatus || this.topics[index].status,
           };
           this.selectedTopic = { ...this.topics[index] };
@@ -401,7 +381,6 @@ export const useTopicStore = defineStore('topics', {
     cancelEdit() {
       if (this.selectedTopic) {
         this.topicName = this.selectedTopic.name;
-        this.description = this.selectedTopic.description;
         this.topicStatus = this.selectedTopic.status;
       }
       this.isEditing = false;
@@ -425,11 +404,61 @@ export const useTopicStore = defineStore('topics', {
     },
     resetForm() {
       this.topicName = '';
-      this.description = '';
       this.topicStatus = null;
       this.isCreatingNew = false;
       this.isEditing = false;
       this.selectedTopic = null;
+    },
+    updateLesson(updatedLesson) {
+      if (!this.selectedTopic) return;
+
+      const lessonIndex = this.selectedTopic.lessons.findIndex(l => l.id === updatedLesson.id);
+      if (lessonIndex !== -1) {
+        this.selectedTopic.lessons[lessonIndex] = {
+          ...this.selectedTopic.lessons[lessonIndex],
+          ...updatedLesson
+        };
+
+        // Update in topics array
+        const topicIndex = this.topics.findIndex(t => t.id === this.selectedTopic.id);
+        if (topicIndex !== -1) {
+          this.topics[topicIndex] = { ...this.selectedTopic };
+        }
+      }
+    },
+    createLesson(newLesson) {
+      if (!this.selectedTopic) return;
+
+      const lesson = {
+        id: Date.now(),
+        name: newLesson.name,
+        imageURL: newLesson.imageURL,
+        status: newLesson.status || 'draft',
+        order: (this.selectedTopic.lessons?.length || 0) + 1
+      };
+
+      if (!this.selectedTopic.lessons) {
+        this.selectedTopic.lessons = [];
+      }
+
+      this.selectedTopic.lessons.push(lesson);
+
+      // Update in topics array
+      const topicIndex = this.topics.findIndex(t => t.id === this.selectedTopic.id);
+      if (topicIndex !== -1) {
+        this.topics[topicIndex] = { ...this.selectedTopic };
+      }
+    },
+    deleteLesson(lessonId) {
+      if (!this.selectedTopic) return;
+
+      this.selectedTopic.lessons = this.selectedTopic.lessons.filter(l => l.id !== lessonId);
+
+      // Update in topics array
+      const topicIndex = this.topics.findIndex(t => t.id === this.selectedTopic.id);
+      if (topicIndex !== -1) {
+        this.topics[topicIndex] = { ...this.selectedTopic };
+      }
     },
   },
 });

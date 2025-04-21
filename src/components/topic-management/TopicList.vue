@@ -1,20 +1,20 @@
-```html
 <template>
+  <TopicSearch />
   <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
-    <q-card class="no-shadow" bordered>
+    <q-card class="card" bordered>
       <q-tabs
         v-model="activeTab"
         dense
-        class="text-grey"
-        active-color="primary"
-        indicator-color="primary"
+        class="tabs sticky-tabs"
+        active-color="white"
+        indicator-color="transparent"
         align="justify"
       >
         <q-tab
-          v-for="option in topicStore.statusOptions"
+          v-for="option in topicStore.statusOptions.filter(opt => opt.value)"
           :key="option.value"
-          :name="option.value || 'all'"
-          :class="activeTab === (option.value || 'all') ? 'text-blue' : ''"
+          :name="option.value"
+          :class="activeTab === option.value ? 'active-tab' : ''"
           :icon="getTabIcon(option.value)"
           :label="option.label"
         >
@@ -24,16 +24,16 @@
         </q-tab>
       </q-tabs>
 
-      <q-separator />
+      <q-separator class="separator" />
 
-      <q-tab-panels v-model="activeTab" animated>
+      <q-tab-panels v-model="activeTab">
         <q-tab-panel
-          v-for="option in topicStore.statusOptions"
-          :key="option.value || 'all'"
-          :name="option.value || 'all'"
-          class="q-pa-sm"
+          v-for="option in topicStore.statusOptions.filter(opt => opt.value)"
+          :key="option.value"
+          :name="option.value"
+          class="tab-panel"
         >
-          <q-list class="rounded-borders scrollable-list" separator>
+          <q-list class="scrollable-list" separator>
             <Draggable
               :modelValue="filteredTopics(option.value)"
               item-key="id"
@@ -46,24 +46,64 @@
                 <q-item
                   clickable
                   v-ripple
+                  class="item"
                   :class="{ 'selected': topicStore.selectedTopic?.id === element.id }"
                   @click="topicStore.selectTopic(element)"
                 >
                   <q-item-section>
-                    <q-item-label class="text-weight-medium" style="font-size: 1.2rem;">
-                      {{ element.name }}
-                    </q-item-label>
-                    <q-item-label caption class="description">
-                      {{ element.description || 'No description available' }}
-                    </q-item-label>
-                    <q-badge
-                      :color="topicStore.getStatusColor(element.status)"
-                      text-color="white"
-                      class="q-mt-xs"
-                      style="font-size: 0.9rem;"
-                    >
-                      {{ element.status }}
-                    </q-badge>
+                    <div class="topic-title-container">
+                      <template v-if="editingTopic?.id === element.id">
+                        <q-input
+                          ref="editInput"
+                          v-model="editingTopic.name"
+                          dense
+                          class="editing"
+                          @keydown="handleKeyDown($event, element)"
+                        />
+                      </template>
+                      <template v-else>
+                        <q-item-label
+                          class="topic-title"
+                          @dblclick="handleDoubleClick(element)"
+                        >
+                          {{ element.name }}
+                        </q-item-label>
+                      </template>
+                    </div>
+                    <div class="status-container">
+                      <div
+                        class="status-dot"
+                        :style="{ backgroundColor: topicStore.getStatusColor(element.status) }"
+                      ></div>
+                      <span class="status-text">{{ element.status }}</span>
+                    </div>
+                  </q-item-section>
+                  <q-item-section side>
+                    <div class="action-buttons">
+                      <q-btn
+                        v-if="element.status === 'draft' || element.status === 'pending'"
+                        flat
+                        round
+                        dense
+                        color="primary"
+                        icon="send"
+                        @click.stop="handleSubmit(element)"
+                        class="action-btn"
+                      >
+                        <q-tooltip>{{ element.status === 'draft' ? 'Submit for Review' : 'Approve' }}</q-tooltip>
+                      </q-btn>
+                      <q-btn
+                        flat
+                        round
+                        dense
+                        color="negative"
+                        icon="delete"
+                        @click.stop="handleDelete(element)"
+                        class="action-btn"
+                      >
+                        <q-tooltip>Delete</q-tooltip>
+                      </q-btn>
+                    </div>
                   </q-item-section>
                 </q-item>
               </template>
@@ -81,28 +121,26 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, nextTick, onMounted, onUnmounted } from 'vue';
 import Draggable from 'vuedraggable';
 import { useTopicStore } from '../../stores/topicStore';
-
+import { useQuasar } from 'quasar';
+import TopicSearch from './TopicSearch.vue';
 const topicStore = useTopicStore();
-const activeTab = ref('all'); // Tab mặc định là "All"
+const $q = useQuasar();
+const activeTab = ref('draft'); // Tab mặc định là "Draft"
+const editingTopic = ref(null);
+const editInput = ref(null);
 
 // Hàm lấy biểu tượng cho tab
 const getTabIcon = (status) => {
   switch (status) {
-    case 'public':
-      return 'public';
-    case 'pending':
-      return 'hourglass_empty';
     case 'draft':
       return 'edit';
-    case 'rejected':
-      return 'cancel';
+    case 'pending':
+      return 'hourglass_empty';
     case 'approved':
       return 'check_circle';
-    default:
-      return 'list'; // Biểu tượng cho tab "All"
   }
 };
 
@@ -113,16 +151,13 @@ const getTopicCount = (status) => {
 
 // Hàm lọc chủ đề theo trạng thái và searchQuery
 const filteredTopics = (status) => {
-  let topics = status
-    ? topicStore.topics.filter((topic) => topic.status === status)
-    : topicStore.topics; // Tab "All"
+  let topics = topicStore.topics.filter((topic) => topic.status === status);
 
   if (topicStore.searchQuery) {
     const query = topicStore.searchQuery.toLowerCase();
     topics = topics.filter(
       (topic) =>
-        topic.name.toLowerCase().includes(query) ||
-        (topic.description && topic.description.toLowerCase().includes(query))
+        topic.name.toLowerCase().includes(query)
     );
   }
 
@@ -131,91 +166,259 @@ const filteredTopics = (status) => {
 
 // Cập nhật thứ tự chủ đề sau khi kéo thả
 const updateTopics = (newOrder, status) => {
-  if (!status) {
-    // Tab "All": Cập nhật toàn bộ topics
-    topicStore.reorderTopics(newOrder);
-  } else {
-    // Tab trạng thái cụ thể: Chỉ cập nhật thứ tự trong trạng thái đó
-    const otherTopics = topicStore.topics.filter((topic) => topic.status !== status);
-    const updatedTopics = [...otherTopics, ...newOrder].sort((a, b) => a.order - b.order);
-    topicStore.reorderTopics(updatedTopics);
-  }
+  const otherTopics = topicStore.topics.filter((topic) => topic.status !== status);
+  const updatedTopics = [...otherTopics, ...newOrder].sort((a, b) => a.order - b.order);
+  topicStore.reorderTopics(updatedTopics);
 };
 
-// Hiệu ứng kéo thả
+// Hiệu ứng kéo thả cơ bản
 const dragStart = () => {
-  document.querySelectorAll('.q-item').forEach((item) => {
+  document.querySelectorAll('.item').forEach((item) => {
     item.style.transition = 'transform 0.2s ease';
-    item.style.transform = 'scale(1.05)';
+    item.style.transform = 'scale(1.02)';
   });
 };
 
 const dragEnd = () => {
-  document.querySelectorAll('.q-item').forEach((item) => {
+  document.querySelectorAll('.item').forEach((item) => {
     item.style.transform = 'scale(1)';
   });
 };
+
+// Hàm xử lý double click để edit
+const handleDoubleClick = (topic) => {
+  editingTopic.value = topic;
+  // Focus vào input sau khi DOM được cập nhật
+  nextTick(() => {
+    if (editInput.value) {
+      editInput.value.focus();
+    }
+  });
+};
+
+// Hàm lưu khi nhấn Enter
+const handleKeyDown = (event, topic) => {
+  if (event.key === 'Enter') {
+    saveEdit(topic);
+  }
+};
+
+// Hàm lưu khi click ra ngoài
+const handleClickOutside = (event) => {
+  if (editingTopic.value && !event.target.closest('.editing')) {
+    saveEdit(editingTopic.value);
+  }
+};
+
+// Hàm lưu thay đổi
+const saveEdit = (topic) => {
+  if (editingTopic.value) {
+    topic.name = editingTopic.value.name;
+    topicStore.updateTopicName(topic.id, editingTopic.value.name);
+    editingTopic.value = null;
+  }
+};
+
+// Hàm xử lý xóa topic
+const handleDelete = (topic) => {
+  // Select topic trước khi xóa
+  topicStore.selectTopic(topic);
+
+  $q.dialog({
+    title: 'Confirm Delete',
+    message: 'Are you sure you want to delete this topic?',
+    cancel: true,
+    persistent: true,
+    ok: {
+      label: 'Delete',
+      color: 'negative',
+      flat: true
+    },
+    cancel: {
+      label: 'Cancel',
+      color: 'grey',
+      flat: true
+    }
+  }).onOk(() => {
+    topicStore.deleteTopic(topic.id);
+  });
+};
+
+// Hàm xử lý submit topic
+const handleSubmit = (topic) => {
+  topicStore.selectTopic(topic);
+
+  if (topic.status === 'draft') {
+    // Draft -> Pending
+    topicStore.updateTopicStatus(topic.id, 'pending');
+    // Chuyển sang tab pending
+    activeTab.value = 'pending';
+  } else if (topic.status === 'pending') {
+    // Pending -> Approved
+    topicStore.updateTopicStatus(topic.id, 'approved');
+    // Chuyển sang tab approved
+    activeTab.value = 'approved';
+  }
+};
+
+// Thêm event listener cho click outside
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside);
+});
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside);
+});
 </script>
 
 <style scoped>
-.q-card {
-  border-radius: 8px;
-  background: #ffffff;
-  border: 1px solid #d1d5db;
+/* Card */
+.card {
+  border-radius: 4px;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  font-family: system-ui, -apple-system, sans-serif;
+  height: 100%;
 }
 
-.q-tab-panel {
+/* Tabs */
+.tabs {
+  background: #f5f5f5;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.sticky-tabs {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: #f5f5f5;
+}
+
+.q-tab {
+  border-radius: 4px;
+  margin: 2px;
+  text-transform: none;
+  font-weight: 500;
+  color: #424242;
+}
+
+.active-tab {
+  background: #1976d2;
+  color: white !important;
+}
+
+.q-tab .q-icon {
+  color: #424242;
+}
+
+.active-tab .q-icon {
+  color: white;
+}
+
+/* Separator */
+.separator {
+  background: #e0e0e0;
+  height: 1px;
+}
+
+/* Tab panels */
+.tab-panel {
   padding: 8px;
 }
 
+/* Scrollable list */
 .scrollable-list {
-  max-height: 800px;
-  overflow-y: auto; /* Thêm cuộn dọc */
-  padding-right: 8px; /* Khoảng cách để tránh thanh cuộn che nội dung */
+  max-height: calc(100vh - 180px - 40px); /* Trừ header, tabs, separator */
+  overflow-y: auto;
+  padding-right: 8px;
+  scrollbar-width: thin;
+  scrollbar-color: #bdbdbd #f5f5f5;
 }
 
-.q-item {
+.scrollable-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollable-list::-webkit-scrollbar-track {
+  background: #f5f5f5;
+  border-radius: 3px;
+}
+
+.scrollable-list::-webkit-scrollbar-thumb {
+  background: #bdbdbd;
+  border-radius: 3px;
+}
+
+/* Topic items */
+.item {
   border-radius: 4px;
-  transition: background 0.2s ease;
+  margin: 4px 0;
+  padding: 8px;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-.q-item:hover {
-  background: #f0f0f0;
+.item:active {
+  cursor: grabbing;
 }
 
-.q-item.selected {
-  background: #eaeaea;
-  border-left: 4px solid #3b82f6;
+.item.selected {
+  border-left: 3px solid #1976d2;
+  background: #f5f5f5;
 }
 
-.description {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  color: #666;
+.topic-title-container {
+  position: relative;
 }
 
-.q-badge {
+.topic-title {
+  font-size: 1rem;
   font-weight: 500;
+  color: #212121;
+  cursor: text;
 }
 
-.dark .q-card {
-  background: #374151;
-  border-color: #4b5563;
+/* Status styles */
+.status-container {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
 }
 
-.dark .q-item:hover {
-  background: #4b5563;
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
 }
 
-.dark .q-item.selected {
-  background: #4b5563;
-  border-left: 4px solid #60a5fa;
+.status-text {
+  font-size: 0.75rem;
+  color: #424242;
+  text-transform: capitalize;
 }
 
-.dark .description {
-  color: #9ca3af;
+/* Delete button */
+.delete-btn {
+  opacity: 1;
+}
+
+/* Action buttons */
+.action-buttons {
+  display: flex;
+  gap: 4px;
+}
+
+.action-btn {
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.item:hover .action-btn {
+  opacity: 1;
 }
 </style>
-```
