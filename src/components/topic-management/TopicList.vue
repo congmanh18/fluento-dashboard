@@ -70,13 +70,6 @@
                         </q-item-label>
                       </template>
                     </div>
-                    <div class="status-container">
-                      <div
-                        class="status-dot"
-                        :style="{ backgroundColor: topicStore.getStatusColor(element.status) }"
-                      ></div>
-                      <span class="status-text">{{ element.status }}</span>
-                    </div>
                   </q-item-section>
                   <q-item-section side>
                     <div class="action-buttons">
@@ -166,9 +159,18 @@ const filteredTopics = (status) => {
 
 // Cập nhật thứ tự chủ đề sau khi kéo thả
 const updateTopics = (newOrder, status) => {
+  // Lấy các topic không thuộc status hiện tại
   const otherTopics = topicStore.topics.filter((topic) => topic.status !== status);
-  const updatedTopics = [...otherTopics, ...newOrder].sort((a, b) => a.order - b.order);
-  topicStore.reorderTopics(updatedTopics);
+
+  // Cập nhật order cho các topic trong newOrder
+  const updatedTopics = newOrder.map((topic, index) => ({
+    ...topic,
+    order: index
+  }));
+
+  // Kết hợp và sắp xếp lại toàn bộ topics
+  const allTopics = [...otherTopics, ...updatedTopics];
+  topicStore.reorderTopics(allTopics);
 };
 
 // Hiệu ứng kéo thả cơ bản
@@ -352,8 +354,8 @@ onUnmounted(() => {
 /* Topic items */
 .item {
   border-radius: 4px;
-  margin: 4px 0;
-  padding: 8px;
+  margin: 6px 0;
+  padding: 12px;
   background: #fff;
   border: 1px solid #e0e0e0;
   cursor: grab;
@@ -376,35 +378,11 @@ onUnmounted(() => {
 }
 
 .topic-title {
-  font-size: 1rem;
-  font-weight: 500;
+  font-size: 1.1rem;
+  font-weight: 600;
   color: #212121;
   cursor: text;
-}
-
-/* Status styles */
-.status-container {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 4px;
-}
-
-.status-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-}
-
-.status-text {
-  font-size: 0.75rem;
-  color: #424242;
-  text-transform: capitalize;
-}
-
-/* Delete button */
-.delete-btn {
-  opacity: 1;
+  line-height: 1.4;
 }
 
 /* Action buttons */

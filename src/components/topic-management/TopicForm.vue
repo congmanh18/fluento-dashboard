@@ -2,317 +2,230 @@
   <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
     <q-card class="card" bordered>
       <div class="q-pa-md">
-        <!-- Preview mode -->
-        <div
-          v-if="!topicStore.isCreatingNew && topicStore.selectedTopic && !topicStore.isEditing"
-          class="preview-mode"
-        >
-          <div class="row justify-between items-center q-mb-md">
-            <h3
-              class="topic-name q-my-none"
-              @dblclick="topicStore.startEdit()"
-            >
-              {{ topicStore.selectedTopic.name }}
-            </h3>
-            <div class="row">
+        <!-- Create topic section -->
+        <div class="section-label">Create Topic</div>
+        <div class="topic-input-form">
+          <q-input
+            v-model="newTopicName"
+            dense
+            outlined
+            placeholder="Enter topic name and press Enter"
+            @keydown.enter="createNewTopic"
+          >
+            <template v-slot:append>
               <q-btn
                 flat
+                dense
                 icon="add"
                 color="primary"
-                class="btn btn-flat q-mr-sm"
-                @click="topicStore.startCreateNew()"
+                @click="createNewTopic"
+              />
+            </template>
+          </q-input>
+        </div>
+
+        <!-- Preview/Edit topic section -->
+        <div v-if="topicStore.selectedTopic" class="preview-mode">
+          <div class="section-label">Preview/Edit Topic</div>
+          <div class="row justify-between items-center q-mb-md">
+            <template v-if="!editingTopic">
+              <div class="topic-header">
+                <h3
+                  class="topic-name q-my-none"
+                  @dblclick="startEditTopic(topicStore.selectedTopic)"
+                >
+                  {{ topicStore.selectedTopic.name }}
+                </h3>
+                <div class="topic-status">
+                  <div
+                    class="status-dot"
+                    :style="{ backgroundColor: topicStore.getStatusColor(topicStore.selectedTopic.status) }"
+                  ></div>
+                  <span class="status-text">{{ topicStore.selectedTopic.status }}</span>
+                </div>
+              </div>
+            </template>
+            <template v-else>
+              <q-input
+                v-model="editingTopic.name"
+                dense
+                outlined
+                autofocus
+                @keydown.enter="saveTopicEdit"
+                @blur="saveTopicEdit"
               >
-                <q-tooltip>Create New Topic</q-tooltip>
-              </q-btn>
-            </div>
+                <template v-slot:append>
+                  <q-btn
+                    flat
+                    dense
+                    icon="close"
+                    color="grey"
+                    @click="cancelTopicEdit"
+                  />
+                </template>
+              </q-input>
+            </template>
           </div>
           <div class="topic-content">
-            <!-- Lesson table or form -->
-            <div v-if="!topicStore.isCreatingLesson && !topicStore.isEditingLesson">
-              <div class="row q-col-gutter-md">
-                <div
-                  v-for="lesson in topicStore.selectedTopic?.lessons || []"
-                  :key="lesson.id"
-                  class="col-12 col-sm-6 col-md-4"
+            <div class="row q-col-gutter-md">
+              <div
+                v-for="lesson in topicStore.selectedTopic?.lessons || []"
+                :key="lesson.id"
+                class="col-12 col-sm-6 col-md-4"
+              >
+                <q-card
+                  class="lesson-card"
+                  @dblclick="startEditLesson(lesson)"
                 >
-                  <q-card
-                    class="lesson-card"
-                    @dblclick="startEditLesson(lesson)"
-                  >
-                    <div class="image-container">
+                  <div class="image-container">
+                    <q-btn
+                      flat
+                      icon="delete"
+                      color="red"
+                      class="delete-btn"
+                      @click.stop="confirmDeleteLesson(lesson.id)"
+                    >
+                      <q-tooltip>Delete Lesson</q-tooltip>
+                    </q-btn>
+                    <q-img
+                      v-if="lesson.imageURL"
+                      :src="lesson.imageURL"
+                      :ratio="16/9"
+                      class="lesson-image"
+                      placeholder-src="https://via.placeholder.com/400x225"
+                    />
+                    <div v-else class="placeholder-image">
+                      <q-icon name="image" size="48px" color="grey-5" />
+                    </div>
+                    <div class="image-overlay">
                       <q-btn
                         flat
-                        icon="delete"
-                        color="red"
-                        class="delete-btn"
-                        @click.stop="confirmDeleteLesson(lesson.id)"
+                        icon="add_photo_alternate"
+                        color="white"
+                        class="upload-btn"
+                        @click.stop="handleImageClick(lesson)"
                       >
-                        <q-tooltip>Delete Lesson</q-tooltip>
+                        <q-tooltip>Upload Image</q-tooltip>
                       </q-btn>
-                      <q-img
-                        v-if="lesson.imageURL"
-                        :src="lesson.imageURL"
-                        :ratio="16/9"
-                        class="lesson-image"
-                        placeholder-src="https://via.placeholder.com/400x225"
+                      <input
+                        type="file"
+                        :ref="el => setImageInputRef(el, lesson)"
+                        accept=".jpg,.jpeg,.png,.gif"
+                        style="display: none"
+                        @change="handleImageChange($event, lesson)"
                       />
-                      <div v-else class="placeholder-image">
-                        <q-icon name="image" size="48px" color="grey-5" />
-                      </div>
-                      <div class="image-overlay">
-                        <q-btn
-                          flat
-                          icon="add_photo_alternate"
-                          color="white"
-                          class="upload-btn"
-                          @click.stop="handleImageClick(lesson)"
-                        >
-                          <q-tooltip>Upload Image</q-tooltip>
-                        </q-btn>
-                        <input
-                          type="file"
-                          :ref="el => setImageInputRef(el, lesson)"
-                          accept=".jpg,.jpeg,.png,.gif"
-                          style="display: none"
-                          @change="handleImageChange($event, lesson)"
-                        />
-                      </div>
                     </div>
-                    <q-card-section>
-                      <template v-if="editingLesson?.id === lesson.id">
-                        <q-input
-                          ref="lessonNameInput"
-                          v-model="editingLesson.name"
-                          dense
-                          autofocus
-                          @keydown.enter="saveLessonEdit"
-                        />
-                        <q-select
-                          v-model="editingLesson.status"
-                          :options="topicStore.statusOptions.map(opt => opt.value)"
-                          dense
-                          class="q-mt-sm"
-                          outlined
-                          emit-value
-                          map-options
-                        />
-                        <div class="row justify-end q-mt-sm">
-                          <q-btn
-                            flat
-                            icon="done"
-                            color="primary"
-                            size="sm"
-                            @click="saveLessonEdit"
-                          >
-                            <q-tooltip>Save</q-tooltip>
-                          </q-btn>
-                          <q-btn
-                            flat
-                            icon="close"
-                            color="grey"
-                            size="sm"
-                            @click="cancelLessonEdit"
-                          >
-                            <q-tooltip>Cancel</q-tooltip>
-                          </q-btn>
-                        </div>
-                      </template>
-                      <template v-else>
-                        <div class="text-h6 q-mb-xs">{{ lesson.name }}</div>
-                        <q-badge
-                          :color="topicStore.getStatusColor(lesson.status)"
-                          text-color="white"
-                          class="badge"
-                        >
-                          {{ lesson.status || 'Unknown' }}
-                        </q-badge>
-                      </template>
-                    </q-card-section>
-                  </q-card>
-                </div>
-                <!-- Add Lesson Card -->
-                <div v-if="!isCreatingNewLesson" class="col-12 col-sm-6 col-md-4">
-                  <q-card
-                    class="lesson-card add-card"
-                    @click="startCreateLesson"
-                  >
-                    <div class="image-container">
-                      <div class="placeholder-image">
-                        <q-icon name="add" size="48px" color="primary" />
-                      </div>
-                    </div>
-                    <q-card-section>
-                      <div class="text-h6 q-mb-xs">Add New Lesson</div>
-                    </q-card-section>
-                  </q-card>
-                </div>
-
-                <!-- New Lesson Form Card -->
-                <div v-if="isCreatingNewLesson" class="col-12 col-sm-6 col-md-4">
-                  <q-card class="lesson-card">
-                    <div class="image-container">
-                      <q-img
-                        v-if="newLesson.imageURL"
-                        :src="newLesson.imageURL"
-                        :ratio="16/9"
-                        class="lesson-image"
-                        placeholder-src="https://via.placeholder.com/400x225"
-                      />
-                      <div v-else class="placeholder-image">
-                        <q-icon name="image" size="48px" color="grey-5" />
-                      </div>
-                      <div class="image-overlay">
-                        <q-btn
-                          flat
-                          icon="add_photo_alternate"
-                          color="white"
-                          class="upload-btn"
-                          @click.stop="handleImageClick(null)"
-                        >
-                          <q-tooltip>Upload Image</q-tooltip>
-                        </q-btn>
-                        <input
-                          type="file"
-                          :ref="el => setImageInputRef(el, null)"
-                          accept=".jpg,.jpeg,.png,.gif"
-                          style="display: none"
-                          @change="handleImageChange($event, null)"
-                        />
-                      </div>
-                    </div>
-                    <q-card-section>
+                  </div>
+                  <q-card-section>
+                    <template v-if="editingLesson?.id === lesson.id">
                       <q-input
                         ref="lessonNameInput"
-                        v-model="newLesson.name"
+                        v-model="editingLesson.name"
                         dense
                         autofocus
-                        placeholder="Lesson Name"
-                        @keydown.enter="saveNewLesson"
-                        @blur="saveNewLesson"
-                      />
-                      <q-select
-                        v-model="newLesson.status"
-                        :options="topicStore.statusOptions.map(opt => opt.value)"
-                        dense
-                        class="q-mt-sm"
+                        @keydown.enter="saveLessonEdit"
                       />
                       <div class="row justify-end q-mt-sm">
+                        <q-btn
+                          flat
+                          icon="done"
+                          color="primary"
+                          size="sm"
+                          @click="saveLessonEdit"
+                        >
+                          <q-tooltip>Save</q-tooltip>
+                        </q-btn>
                         <q-btn
                           flat
                           icon="close"
                           color="grey"
                           size="sm"
-                          @click="cancelNewLesson"
+                          @click="cancelLessonEdit"
                         >
                           <q-tooltip>Cancel</q-tooltip>
                         </q-btn>
                       </div>
-                    </q-card-section>
-                  </q-card>
-                </div>
+                    </template>
+                    <template v-else>
+                      <div class="text-h6 q-mb-xs">{{ lesson.name }}</div>
+                    </template>
+                  </q-card-section>
+                </q-card>
               </div>
-            </div>
-            <div v-else class="lesson-form">
-              <div class="row justify-end q-mb-md">
-                <q-btn
-                  flat
-                  :icon="topicStore.isEditingLesson ? 'done' : 'save'"
-                  label="Save"
-                  color="primary"
-                  class="btn btn-flat q-mr-sm"
-                  :disable="!topicStore.lessonName"
-                  @click="topicStore.saveLesson()"
+              <!-- Add Lesson Card -->
+              <div v-if="!isCreatingNewLesson" class="col-12 col-sm-6 col-md-4">
+                <q-card
+                  class="lesson-card add-card"
+                  @click="startCreateLesson"
                 >
-                  <q-tooltip>{{ topicStore.isEditingLesson ? 'Save Lesson' : 'Save' }}</q-tooltip>
-                </q-btn>
-                <q-btn
-                  flat
-                  icon="close"
-                  label="Cancel"
-                  color="grey"
-                  class="btn btn-flat"
-                  @click="topicStore.cancelLesson()"
-                >
-                  <q-tooltip>Cancel</q-tooltip>
-                </q-btn>
+                  <div class="image-container">
+                    <div class="placeholder-image">
+                      <q-icon name="add" size="48px" color="primary" />
+                    </div>
+                  </div>
+                  <q-card-section>
+                    <div class="text-h6 q-mb-xs">Add New Lesson</div>
+                  </q-card-section>
+                </q-card>
               </div>
-              <q-input
-                v-model="topicStore.lessonName"
-                :label="topicStore.isEditingLesson ? 'Edit Lesson Name' : 'Lesson Name'"
-                class="input q-mb-sm"
-                dense
-                outlined
-                bg-color="white"
-                color="primary"
-              />
-              <q-input
-                v-model="topicStore.lessonImageURL"
-                :label="topicStore.isEditingLesson ? 'Edit Image URL' : 'Image URL'"
-                class="input q-mb-sm"
-                dense
-                outlined
-                bg-color="white"
-                color="primary"
-              />
-              <q-select
-                v-model="topicStore.lessonStatus"
-                :options="topicStore.statusOptions.map(opt => opt.value)"
-                :label="topicStore.isEditingLesson ? 'Edit Status' : 'Status'"
-                class="input q-mb-md"
-                dense
-                outlined
-                bg-color="white"
-                color="primary"
-              />
-            </div>
-          </div>
-        </div>
 
-        <!-- Create or Edit Topic mode -->
-        <div v-else class="create-mode">
-          <div class="row justify-end q-mb-md">
-            <q-btn
-              flat
-              :icon="topicStore.isEditing ? 'done' : 'save'"
-              label="Save"
-              color="primary"
-              class="btn btn-flat q-mr-sm"
-              :disable="!topicStore.topicName"
-              @click="topicStore.isEditing ? topicStore.saveEdit() : topicStore.saveTopic()"
-            >
-              <q-tooltip>{{ topicStore.isEditing ? 'Save Edit' : 'Save' }}</q-tooltip>
-            </q-btn>
-            <q-btn
-              flat
-              icon="close"
-              label="Cancel"
-              color="grey"
-              class="btn btn-flat"
-              @click="cancelEditOrCreate"
-            >
-              <q-tooltip>Cancel</q-tooltip>
-            </q-btn>
-          </div>
-          <div class="topic-content">
-            <q-input
-              v-model="topicStore.topicName"
-              :label="topicStore.isEditing ? 'Edit Topic Name' : 'Topic Name'"
-              class="input q-mb-sm"
-              dense
-              outlined
-              bg-color="white"
-              color="primary"
-            />
-            <q-select
-              v-model="topicStore.topicStatus"
-              :options="topicStore.statusOptions.map(opt => opt.value)"
-              :label="topicStore.isEditing ? 'Edit Status' : 'Status'"
-              class="input q-mb-md"
-              dense
-              outlined
-              bg-color="white"
-              color="primary"
-            />
+              <!-- New Lesson Form Card -->
+              <div v-if="isCreatingNewLesson" class="col-12 col-sm-6 col-md-4">
+                <q-card class="lesson-card">
+                  <div class="image-container">
+                    <q-img
+                      v-if="newLesson.imageURL"
+                      :src="newLesson.imageURL"
+                      :ratio="16/9"
+                      class="lesson-image"
+                      placeholder-src="https://via.placeholder.com/400x225"
+                    />
+                    <div v-else class="placeholder-image">
+                      <q-icon name="image" size="48px" color="grey-5" />
+                    </div>
+                    <div class="image-overlay">
+                      <q-btn
+                        flat
+                        icon="add_photo_alternate"
+                        color="white"
+                        class="upload-btn"
+                        @click.stop="handleImageClick(null)"
+                      >
+                        <q-tooltip>Upload Image</q-tooltip>
+                      </q-btn>
+                      <input
+                        type="file"
+                        :ref="el => setImageInputRef(el, null)"
+                        accept=".jpg,.jpeg,.png,.gif"
+                        style="display: none"
+                        @change="handleImageChange($event, null)"
+                      />
+                    </div>
+                  </div>
+                  <q-card-section>
+                    <q-input
+                      ref="lessonNameInput"
+                      v-model="newLesson.name"
+                      dense
+                      autofocus
+                      placeholder="Lesson Name"
+                      @keydown.enter="saveNewLesson"
+                    />
+                    <div class="row justify-end q-mt-sm">
+                      <q-btn
+                        flat
+                        icon="close"
+                        color="grey"
+                        size="sm"
+                        @click="cancelNewLesson"
+                      >
+                        <q-tooltip>Cancel</q-tooltip>
+                      </q-btn>
+                    </div>
+                  </q-card-section>
+                </q-card>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -327,15 +240,66 @@ import { useTopicStore } from '../../stores/topicStore';
 
 const $q = useQuasar();
 const topicStore = useTopicStore();
+const editingTopic = ref(null);
+const newTopicName = ref('');
 const editingLesson = ref(null);
 const isCreatingNewLesson = ref(false);
 const newLesson = ref({
   name: '',
-  status: 'draft',
   imageURL: null
 });
 const imageInputs = ref({});
 const lessonNameInput = ref(null);
+
+// Topic handling
+const createNewTopic = () => {
+  if (!newTopicName.value) {
+    $q.notify({
+      message: 'Topic name cannot be empty',
+      color: 'negative',
+      icon: 'error'
+    });
+    return;
+  }
+
+  topicStore.topicName = newTopicName.value;
+  topicStore.topicStatus = 'draft';
+  topicStore.saveTopic();
+  newTopicName.value = '';
+
+  // Select the newly created topic
+  const createdTopic = topicStore.topics.find(t => t.name === topicStore.topicName);
+  if (createdTopic) {
+    topicStore.selectTopic(createdTopic);
+  }
+};
+
+const startEditTopic = (topic) => {
+  editingTopic.value = { ...topic };
+  nextTick(() => {
+    const input = document.querySelector('.edit-mode input');
+    if (input) input.focus();
+  });
+};
+
+const saveTopicEdit = () => {
+  if (editingTopic.value) {
+    if (!editingTopic.value.name) {
+      $q.notify({
+        message: 'Topic name cannot be empty',
+        color: 'negative',
+        icon: 'error'
+      });
+      return;
+    }
+    topicStore.updateTopicName(editingTopic.value.id, editingTopic.value.name);
+    editingTopic.value = null;
+  }
+};
+
+const cancelTopicEdit = () => {
+  editingTopic.value = null;
+};
 
 // Image handling
 const setImageInputRef = (el, lesson) => {
@@ -416,7 +380,6 @@ const startCreateLesson = () => {
   isCreatingNewLesson.value = true;
   newLesson.value = {
     name: '',
-    status: 'draft',
     imageURL: null
   };
   nextTick(() => {
@@ -437,7 +400,6 @@ const saveNewLesson = () => {
   isCreatingNewLesson.value = false;
   newLesson.value = {
     name: '',
-    status: 'draft',
     imageURL: null
   };
 };
@@ -446,7 +408,6 @@ const cancelNewLesson = () => {
   isCreatingNewLesson.value = false;
   newLesson.value = {
     name: '',
-    status: 'draft',
     imageURL: null
   };
 };
@@ -463,14 +424,6 @@ const confirmDeleteLesson = (lessonId) => {
       editingLesson.value = null;
     }
   });
-};
-
-const cancelEditOrCreate = () => {
-  if (topicStore.isEditing) {
-    topicStore.cancelEdit();
-  } else if (topicStore.isCreatingNew) {
-    topicStore.cancelCreate();
-  }
 };
 </script>
 
@@ -495,6 +448,13 @@ const cancelEditOrCreate = () => {
   color: #212121;
   margin-bottom: 8px;
   cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.topic-name:hover {
+  background-color: #f5f5f5;
 }
 
 /* Inputs */
@@ -824,5 +784,80 @@ const cancelEditOrCreate = () => {
 
 .dark .placeholder-image {
   background: #616161;
+}
+
+.topic-input-form {
+  margin-bottom: 24px;
+}
+
+.preview-mode {
+  margin-top: 16px;
+}
+
+.section-label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #757575;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.dark .section-label {
+  color: #bdbdbd;
+}
+
+.topic-name {
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: #212121;
+  margin-bottom: 8px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.topic-name:hover {
+  background-color: #f5f5f5;
+}
+
+.dark .topic-name {
+  color: #f5f5f5;
+}
+
+.dark .topic-name:hover {
+  background-color: #616161;
+}
+
+.edit-mode {
+  margin-bottom: 16px;
+}
+
+.topic-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.topic-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.status-text {
+  font-size: 0.9rem;
+  color: #757575;
+  text-transform: capitalize;
+}
+
+.dark .status-text {
+  color: #bdbdbd;
 }
 </style>
