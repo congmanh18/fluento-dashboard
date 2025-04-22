@@ -16,13 +16,20 @@
           <SidebarItem to="/users/invite" icon="person_add_alt" label="Invite User" />
           <SidebarItem to="/users/activity-log" icon="history" label="Activity Logs" />
       </SidebarGroup>
-      <SidebarGroup icon="menu_open" label="Content Studio">
+      <SidebarGroup icon="school" label="Content Studio">
           <SidebarItem to="/content/topics" icon="topic" label="Topic & Lesson" />
-          <!-- <SidebarItem to="/content/lessons" icon="school" label="Lessons" /> -->
+          <!-- <SidebarItem to="/content/topics2" icon="topic" label="Topic & Lesson 2" /> -->
           <SidebarItem to="/content/dialogs" icon="chat" label="Dialogs" />
           <SidebarItem to="/content/stories" icon="book" label="Stories" />
           <SidebarItem to="/content/vocabulary" icon="translate" label="Vocabulary" />
       </SidebarGroup>
+
+      <!-- <SidebarGroup icon="view_in_ar" label="Templates">
+          <SidebarItem to="/templates/template1" icon="view_in_ar" label="Template 1" />
+          <SidebarItem to="/templates/template2" icon="view_in_ar" label="Template 2" />
+          <SidebarItem to="/templates/template3" icon="view_in_ar" label="Template 3" />
+          <SidebarItem to="/templates/template4" icon="view_in_ar" label="Template 4" />
+      </SidebarGroup> -->
       <!-- <SidebarGroup icon="check_circle" label="Approval Center">
           <SidebarItem to="/approval/pending-topics" icon="hourglass_empty" label="Pending Topics"/>
           <SidebarItem to="/approval/pending-lessons" icon="hourglass_bottom" label="Pending Lessons"/>
@@ -98,6 +105,9 @@
           <SidebarItem to="/support/resolved" icon="check_circle" label="Resolved" />
           <SidebarItem to="/support/faq" icon="help" label="FAQ Editor" />
         </SidebarGroup> -->
+
+
+        <!-- <SidebarItem to="/tree-table" icon="view_in_ar" label="Tree Table" /> -->
     </q-list>
   </q-drawer>
 </template>

@@ -9,7 +9,6 @@ const routes = [
       {path: '/Profile', component: () => import('pages/UserProfile.vue')},
       {path: '/Map', component: () => import('pages/Map.vue')},
       {path: '/MapMarker', component: () => import('pages/MapMarker.vue')},
-      {path: '/TreeTable', component: () => import('pages/TreeTable.vue')},
       {path: '/StreetView', component: () => import('pages/StreetView.vue')},
       {path: '/Cards', component: () => import('pages/Cards.vue')},
       {path: '/Tables', component: () => import('pages/Tables.vue')},
@@ -22,13 +21,20 @@ const routes = [
       {path: '/Footer', component: () => import('pages/Footer.vue')},
       {path: '/CardHeader', component: () => import('pages/CardHeader.vue')},
 
+      {path: '/tree-table', component: () => import('pages/TreeTable.vue')},
 
       { path: 'content/topics', component: () => import('src/pages/content/TopicsManagement.vue') },
+      { path: 'content/topics2', component: () => import('src/pages/content/TopicsManagement2.vue') },
+
       { path: 'content/lessons', component: () => import('pages/content/LessonsPage.vue') },
       { path: 'content/dialogs', component: () => import('pages/content/DialogsPage.vue') },
       { path: 'content/stories', component: () => import('pages/content/StoriesPage.vue') },
       { path: 'content/vocabulary', component: () => import('pages/content/VocabulariesPage.vue') },
 
+      { path: 'templates/template1', component: () => import('pages/template/Template1.vue') },
+      { path: 'templates/template2', component: () => import('pages/template/Template2.vue') },
+      { path: 'templates/template3', component: () => import('pages/template/Template3.vue') },
+      { path: 'templates/template4', component: () => import('pages/template/Template4.vue') },
       { path: 'support/feedback', component: () => import('pages/support/Feedback.vue') },
       { path: 'support/contact', component: () => import('pages/support/Contact.vue') },
       { path: 'support/resolved', component: () => import('pages/support/Resolved.vue') },
