@@ -1,24 +1,50 @@
-import { boot } from 'quasar/wrappers'
 import axios from 'axios'
+import { Notify } from 'quasar'
 
-// Be careful when using SSR for cross-request state pollution
-// due to creating a Singleton instance here;
-// If any client changes this (global) instance, it might be a
-// good idea to move this instance creation inside of the
-// "export default () => {}" function below (which runs individually
-// for each client)
-const api = axios.create({ baseURL: 'https://api.example.com' })
-
-export default boot(({ app }) => {
-  // for use inside Vue files (Options API) through this.$axios and this.$api
-
-  app.config.globalProperties.$axios = axios
-  // ^ ^ ^ this will allow you to use this.$axios (for Vue Options API form)
-  //       so you won't necessarily have to import axios in each vue file
-
-  app.config.globalProperties.$api = api
-  // ^ ^ ^ this will allow you to use this.$api (for Vue Options API form)
-  //       so you can easily perform requests against your app's API
+const api = axios.create({
+  baseURL: 'https://api.lucas-dev.click',
+  headers: {
+    'Content-Type': 'application/json'
+  }
 })
 
-export { api }
+// Add a response interceptor
+api.interceptors.response.use(
+  response => {
+    if (response.data.code !== 200) {
+      Notify.create({
+        type: 'negative',
+        message: response.data.message || 'An error occurred'
+      })
+      return Promise.reject(response.data.message)
+    }
+    return response.data
+  },
+  error => {
+    Notify.create({
+      type: 'negative',
+      message: error.message || 'An error occurred'
+    })
+    return Promise.reject(error)
+  }
+)
+
+export const contentApi = {
+  // Topics
+  getTopics: (params) => api.get('/content/topics', { params }),
+  createTopic: (data) => api.post('/content/topics', data),
+  updateTopic: (id, data) => api.patch(`/content/topics/${id}`, data),
+  deleteTopic: (id) => api.delete(`/content/topics/${id}`),
+  reorderTopics: (data) => api.patch('/content/topics/reorder', data),
+
+  // Lessons
+  getLessons: (topicId, params) => api.get(`/content/topics/${topicId}/lessons`, { params }),
+  createLesson: (topicId, data) => api.post(`/content/topics/${topicId}/lessons`, data),
+  updateLesson: (topicId, lessonId, data) => api.patch(`/content/topics/${topicId}/lessons/${lessonId}`, data),
+  deleteLesson: (topicId, lessonId) => api.delete(`/content/topics/${topicId}/lessons/${lessonId}`),
+  reorderLessons: (topicId, data) => api.patch(`/content/topics/${topicId}/lessons/reorder`, data)
+}
+
+export default ({ app }) => {
+  app.config.globalProperties.$api = contentApi
+}

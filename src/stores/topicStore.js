@@ -1,151 +1,21 @@
 import { defineStore } from 'pinia';
 import { Notify } from 'quasar';
 import { debounce } from 'lodash';
+import { useLanguageStore } from './language';
+import { contentApi } from 'src/boot/axios';
 
 export const useTopicStore = defineStore('topics', {
   state: () => ({
-    topics: [
-      {
-        id: 1,
-        name: 'Chào hỏi giao tiếp căn bản',
-        status: 'draft',
-        order: 1,
-        lessons: [
-          {
-            id: 1,
-            name: 'Chào hỏi',
-            imageURL: 'https://picsum.photos/200/300',
-            order: 1,
-          },
-          {
-            id: 2,
-            name: 'Tự giới thiệu',
-            imageURL: 'https://picsum.photos/200/300',
-            order: 2,
-          },
-          {
-            id: 3,
-            name: 'Chia sẻ thông tin cá nhân',
-            imageURL: 'https://picsum.photos/200/300',
-            order: 3,
-          },
-        ],
-      },
-      {
-        id: 2,
-        name: 'Văn hóa và lịch sử',
-        status: 'draft',
-        order: 2,
-        lessons: [
-          {
-            id: 1,
-            name: 'Văn hóa Việt Nam',
-            imageURL: 'https://picsum.photos/200/300',
-            order: 1,
-          },
-          {
-            id: 2,
-            name: 'Lịch sử Việt Nam',
-            imageURL: 'https://picsum.photos/200/300',
-            order: 2,
-          },
-          {
-            id: 3,
-            name: 'Văn hóa thế giới',
-            imageURL: 'https://picsum.photos/200/300',
-            order: 3,
-          },
-        ],
-      },
-      {
-        id: 3,
-        name: 'Khoa học và công nghệ',
-        status: 'draft',
-        order: 3,
-        lessons: [
-          {
-            id: 1,
-            name: 'Khoa học Việt Nam',
-            imageURL: 'https://picsum.photos/200/300',
-            order: 1,
-          },
-          {
-            id: 2,
-            name: 'Công nghệ thông tin',
-            imageURL: 'https://picsum.photos/200/300',
-            order: 2,
-          },
-          {
-            id: 3,
-            name: 'Khoa học thế giới',
-            imageURL: 'https://picsum.photos/200/300',
-            order: 3,
-          },
-        ],
-      },
-      {
-        id: 4,
-        name: 'Đời sống hàng ngày',
-        status: 'draft',
-        order: 4,
-        lessons: [
-          {
-            id: 1,
-            name: 'Đồ dùng hàng ngày',
-            imageURL: 'https://picsum.photos/200/300',
-            order: 1,
-          },
-          {
-            id: 2,
-            name: 'Thức ăn hàng ngày',
-            imageURL: 'https://picsum.photos/200/300',
-            order: 2,
-          },
-          {
-            id: 3,
-            name: 'Đồ uống hàng ngày',
-            imageURL: 'https://picsum.photos/200/300',
-            order: 3,
-          },
-        ],
-      },
-      {
-        id: 5,
-        name: 'Công việc và sự nghiệp',
-        status: 'reject',
-        order: 5,
-      },
-      {
-        id: 6,
-        name: 'Lễ hội và tết trung thu',
-        status: 'reject',
-        order: 6,
-      },
-      {
-        id: 7,
-        name: 'Du lịch và văn hóa',
-        status: 'reject',
-        order: 7,
-      },
-      {
-        id: 8,
-        name: 'Tài chính và đầu tư',
-        status: 'approved',
-        order: 8,
-      },
-      {
-        id: 9,
-        name: 'Địa điểm du lịch',
-        status: 'approved',
-        order: 9,
-      },
-      {
-        id: 10,
-        name: 'Làm việc với người khác',
-        status: 'approved',
-        order: 10,
-      },
-    ],
+    topics: [],
+    pagination: {
+      limit: 10,
+      page: 1,
+      sort: 'asc',
+      total_rows: 0,
+      total_pages: 0
+    },
+    lessons: {},
+    lessonPagination: {},
     selectedTopic: null,
     topicName: '',
     topicStatus: null,
@@ -157,78 +27,313 @@ export const useTopicStore = defineStore('topics', {
     statusOptions: [
       { label: 'All', value: null },
       { label: 'Draft', value: 'draft' },
-      { label: 'Reject', value: 'reject' },
+      { label: 'Rejected', value: 'rejected' },
       { label: 'Approved', value: 'approved' },
     ],
+    pendingReorder: false
   }),
 
   actions: {
-    updateTopic(topic) {
-      const index = this.topics.findIndex(t => t.id === topic.id);
-      if (index !== -1) {
-        this.topics[index] = topic;
-      }
-    },
+    // Lấy danh sách topic
+    async fetchTopics(params = {}) {
+      try {
+        const { limit = 20, page = 1, sort = 'asc', search = '' } = params;
+        const response = await contentApi.getTopics({
+          limit,
+          page,
+          sort,
+          search
+        });
 
-    createTopic(topic) {
-      const newTopic = {
-        ...topic,
-        id: Date.now(),
-        order: 1,
-      };
-      this.topics.forEach(t => t.order += 1);
-      this.topics.unshift(newTopic);
-    },
-
-    deleteTopic(id) {
-      this.topics = this.topics.filter(t => t.id !== id);
-    },
-
-    reorderTopics(topics) {
-      this.topics = topics;
-    },
-
-    updateLesson(topicId, lesson) {
-      const topic = this.topics.find(t => t.id === topicId);
-      if (topic && topic.lessons) {
-        const lessonIndex = topic.lessons.findIndex(l => l.id === lesson.id);
-        if (lessonIndex !== -1) {
-          topic.lessons[lessonIndex] = lesson;
-        }
-      }
-    },
-
-    createLesson(topicId, lesson) {
-      const topic = this.topics.find(t => t.id === topicId);
-      if (topic) {
-        if (!topic.lessons) {
-          topic.lessons = [];
-        }
-        const newLesson = {
-          ...lesson,
-          id: Date.now(),
-          order: topic.lessons.length + 1,
+        this.topics = response.detail.rows;
+        this.pagination = {
+          limit: response.detail.limit,
+          page: response.detail.page,
+          sort: response.detail.sort,
+          total_rows: response.detail.total_rows,
+          total_pages: response.detail.total_pages
         };
-        topic.lessons.push(newLesson);
+        return response;
+      } catch (error) {
+        throw error;
       }
     },
 
-    deleteLesson(topicId, lessonId) {
-      const topic = this.topics.find(t => t.id === topicId);
-      if (topic && topic.lessons) {
-        topic.lessons = topic.lessons.filter(l => l.id !== lessonId);
+    // Tạo topic mới
+    async createTopic(topic) {
+      try {
+        const languageStore = useLanguageStore();
+        const response = await contentApi.createTopic({
+          ...topic,
+          lang: languageStore.sourceLanguage,
+          order: 0,
+          status: 'draft'
+        });
+
+        // Cập nhật danh sách topic
+        await this.fetchTopics({
+          limit: this.pagination.limit,
+          page: this.pagination.page,
+          sort: this.pagination.sort
+        });
+        return response.detail.topic_id;
+      } catch (error) {
+        throw error;
       }
     },
 
-    sortTopicsByOrder(order) {
-      const sortedTopics = [...this.topics].sort((a, b) => {
-        if (order === 'asc') {
-          return a.order - b.order;
-        } else {
-          return b.order - a.order;
+    // Cập nhật topic
+    async updateTopic(topic) {
+      try {
+        const languageStore = useLanguageStore();
+        const response = await contentApi.updateTopic(topic.id, {
+          ...topic,
+          lang: languageStore.sourceLanguage
+        });
+
+        if (response.code === 200) {
+          Notify.create({
+            type: 'positive',
+            message: 'Topic updated successfully'
+          });
+          // Cập nhật danh sách topic
+          await this.fetchTopics({
+            limit: this.pagination.limit,
+            page: this.pagination.page,
+            sort: this.pagination.sort
+          });
         }
+        return response;
+      } catch (error) {
+        throw error;
+      }
+    },
+
+    // Xóa topic
+    async deleteTopic(id) {
+      try {
+        const response = await contentApi.deleteTopic(id);
+        if (response.code === 200) {
+          // Xóa topic khỏi danh sách topic
+          this.topics = this.topics.filter(topic => topic.id !== id);
+          // Cập nhật phân trang nếu cần
+          if (this.topics.length === 0 && this.pagination.page > 1) {
+            this.pagination.page -= 1;
+            await this.fetchTopics({
+              limit: this.pagination.limit,
+              page: this.pagination.page,
+              sort: this.pagination.sort
+            });
+          }
+        }
+        return response;
+      } catch (error) {
+        throw error;
+      }
+    },
+
+    // Sắp xếp lại topic
+    async reorderTopics(topics) {
+      try {
+        // Cập nhật trạng thái local trước
+        this.topics = topics.map((topic, index) => ({
+          ...topic,
+          order: index + 1
+        }));
+
+        // Chuẩn bị dữ liệu cho API
+        const reorderData = this.topics.map(topic => ({
+          id: topic.id,
+          order: topic.order
+        }));
+
+        const response = await contentApi.reorderTopics(reorderData);
+        if (response.code === 200) {
+          Notify.create({
+            type: 'positive',
+            message: 'Topics reordered successfully'
+          });
+          // Cập nhật danh sách topic để đảm bảo tính nhất quán
+          await this.fetchTopics({
+            limit: this.pagination.limit,
+            page: this.pagination.page,
+            sort: this.pagination.sort
+          });
+        }
+      } catch (error) {
+        console.error('Failed to reorder topics:', error);
+        Notify.create({
+          type: 'negative',
+          message: 'Failed to reorder topics'
+        });
+        // Quay lại trạng thái trước đó trên lỗi
+        await this.fetchTopics({
+          limit: this.pagination.limit,
+          page: this.pagination.page,
+          sort: this.pagination.sort
+        });
+      }
+    },
+
+    // Xử lý kết thúc sắp xếp
+    handleDragEnd(topics) {
+      this.topics = topics;
+      this.reorderTopics(topics);
+    },
+
+    // Sắp xếp topic theo thứ tự
+    sortTopicsByOrder(order) {
+      this.pagination.sort = order;
+      this.fetchTopics({
+        limit: this.pagination.limit,
+        page: this.pagination.page,
+        sort: order
       });
-      this.topics = sortedTopics;
+    },
+
+    // Lấy danh sách bài học
+    async fetchLessons(topicId, params = {}) {
+      try {
+        const { limit = 10, page = 1, sort = 'asc' } = params;
+        const response = await contentApi.getLessons(topicId, {
+          limit,
+          page,
+          sort
+        });
+
+        this.lessons[topicId] = response.detail.rows;
+        this.lessonPagination[topicId] = {
+          limit: response.detail.limit,
+          page: response.detail.page,
+          sort: response.detail.sort,
+          total_rows: response.detail.total_rows,
+          total_pages: response.detail.total_pages
+        };
+        return response;
+      } catch (error) {
+        throw error;
+      }
+    },
+
+    // Tạo bài học mới
+    async createLesson(topicId, lesson) {
+      try {
+        const languageStore = useLanguageStore();
+        const response = await contentApi.createLesson(topicId, {
+          ...lesson,
+          lang: languageStore.sourceLanguage,
+          order: 0
+        });
+
+        if (response.code === 200) {
+          Notify.create({
+            type: 'positive',
+            message: 'Lesson created successfully'
+          });
+          // Cập nhật danh sách bài học
+          await this.fetchLessons(topicId, {
+            limit: this.lessonPagination[topicId]?.limit || 10,
+            page: this.lessonPagination[topicId]?.page || 1,
+            sort: this.lessonPagination[topicId]?.sort || 'asc'
+          });
+        }
+        return response;
+      } catch (error) {
+        throw error;
+      }
+    },
+
+    // Cập nhật bài học
+    async updateLesson(topicId, lesson) {
+      try {
+        const languageStore = useLanguageStore();
+        const response = await contentApi.updateLesson(topicId, lesson.id, {
+          ...lesson,
+          lang: languageStore.sourceLanguage,
+          order: lesson.order || 0
+        });
+
+        if (response.code === 200) {
+          Notify.create({
+            type: 'positive',
+            message: 'Lesson updated successfully'
+          });
+          // Cập nhật danh sách bài học
+          await this.fetchLessons(topicId, {
+            limit: this.lessonPagination[topicId]?.limit || 10,
+            page: this.lessonPagination[topicId]?.page || 1,
+            sort: this.lessonPagination[topicId]?.sort || 'asc'
+          });
+        }
+        return response;
+      } catch (error) {
+        throw error;
+      }
+    },
+
+    // Xóa bài học
+    async deleteLesson(topicId, lessonId) {
+      try {
+        const response = await contentApi.deleteLesson(topicId, lessonId);
+        if (response.code === 200) {
+          Notify.create({
+            type: 'positive',
+            message: 'Lesson deleted successfully'
+          });
+          // Cập nhật danh sách bài học
+          await this.fetchLessons(topicId, {
+            limit: this.lessonPagination[topicId]?.limit || 10,
+            page: this.lessonPagination[topicId]?.page || 1,
+            sort: this.lessonPagination[topicId]?.sort || 'asc'
+          });
+        }
+        return response;
+      } catch (error) {
+        throw error;
+      }
+    },
+
+    // Sắp xếp lại bài học
+    async reorderLessons(topicId, lessons) {
+      try {
+        // Cập nhật trạng thái local trước
+        this.lessons[topicId] = lessons.map((lesson, index) => ({
+          ...lesson,
+          order: index + 1
+        }));
+
+        // Chuẩn bị dữ liệu cho API
+        const reorderData = lessons.map(lesson => ({
+          id: lesson.id,
+          order: lesson.order
+        }));
+
+        const response = await contentApi.reorderLessons(topicId, reorderData);
+        if (response.code === 200) {
+          Notify.create({
+            type: 'positive',
+            message: 'Lessons reordered successfully'
+          });
+          // Cập nhật danh sách bài học để đảm bảo tính nhất quán
+          await this.fetchLessons(topicId, {
+            limit: this.lessonPagination[topicId]?.limit || 10,
+            page: this.lessonPagination[topicId]?.page || 1,
+            sort: this.lessonPagination[topicId]?.sort || 'asc'
+          });
+        }
+      } catch (error) {
+        console.error('Failed to reorder lessons:', error);
+        Notify.create({
+          type: 'negative',
+          message: 'Failed to reorder lessons'
+        });
+        // Quay lại trạng thái trước đó trên lỗi
+        await this.fetchLessons(topicId, {
+          limit: this.lessonPagination[topicId]?.limit || 10,
+          page: this.lessonPagination[topicId]?.page || 1,
+          sort: this.lessonPagination[topicId]?.sort || 'asc'
+        });
+      }
     },
   },
 });

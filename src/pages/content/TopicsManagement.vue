@@ -66,6 +66,30 @@ export default defineComponent({
 </script>
 
 <style scoped>
+.q-pa-md {
+  height: calc(105vh - 100px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.row.q-mb-md, .topic-header, .row.items-center.q-pa-sm {
+  flex: 0 0 auto;
+}
+
+.topic-list {
+  flex: 1 1 auto;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 200px);
+}
+
+.topic-items {
+  overflow-y: auto;
+  flex: 1 1 auto;
+}
+
 .my-card {
   height: 100%;
 }
