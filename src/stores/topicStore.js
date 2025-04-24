@@ -65,9 +65,7 @@ export const useTopicStore = defineStore('topics', {
         const languageStore = useLanguageStore();
         const response = await contentApi.createTopic({
           ...topic,
-          lang: languageStore.sourceLanguage,
-          order: 0,
-          status: 'draft'
+          lang: languageStore.sourceLanguage
         });
 
         // Cập nhật danh sách topic
@@ -136,28 +134,26 @@ export const useTopicStore = defineStore('topics', {
     async reorderTopics(topics) {
       try {
         // Cập nhật trạng thái local trước
-        this.topics = topics.map((topic, index) => ({
+        const totalTopics = topics.length;
+        const reorderedTopics = topics.map((topic, index) => ({
           ...topic,
-          order: index + 1
+          order: totalTopics - index
         }));
 
         // Chuẩn bị dữ liệu cho API
-        const reorderData = this.topics.map(topic => ({
+        const reorderData = reorderedTopics.map(topic => ({
           id: topic.id,
           order: topic.order
         }));
 
         const response = await contentApi.reorderTopics(reorderData);
         if (response.code === 200) {
+          // Cập nhật trạng thái local với order mới
+          this.topics = reorderedTopics;
+
           Notify.create({
             type: 'positive',
             message: 'Topics reordered successfully'
-          });
-          // Cập nhật danh sách topic để đảm bảo tính nhất quán
-          await this.fetchTopics({
-            limit: this.pagination.limit,
-            page: this.pagination.page,
-            sort: this.pagination.sort
           });
         }
       } catch (error) {

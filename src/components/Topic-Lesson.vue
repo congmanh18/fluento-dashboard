@@ -65,19 +65,19 @@
     <!-- Danh sách topic -->
     <div class="topic-list">
       <div class="topic-header row items-center q-pa-sm bg-grey-2">
-        <div class="col-1 text-left">
+        <!-- <div class="col-1 text-left">
           <div class="row q-gutter-sm">
             <q-btn
               flat
               dense
               round
-              :icon="sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward'"
+              :icon="sortOrder === 'desc' ? 'arrow_upward' : 'arrow_downward'"
               @click="toggleSortOrder"
               color="primary"
               size="sm"
             />
           </div>
-        </div>
+        </div> -->
 
         <!-- Chọn tất cả -->
         <div class="col-1 text-left" v-if="isDeleteMode">
@@ -152,7 +152,7 @@
         item-key="id"
         handle=".handle"
         @start="drag=true"
-        @end="drag=false; handleDragEnd(filteredTopics)"
+        @end="drag=false"
         class="topic-items"
         :disabled="isDeleteMode"
       >
@@ -344,7 +344,7 @@
                             <q-icon name="drag_indicator" class="handle cursor-move" style="font-size: 24px;" />
                           </div>
                           <div class="col-1 text-left">
-                            <q-checkbox v-model="selectedLessons" :val="lesson" />
+                            <!-- <q-checkbox v-model="selectedLessons" :val="lesson" /> -->
                           </div>
 
                           <!-- Tên bài học -->
@@ -647,12 +647,22 @@ export default defineComponent({
     const createTopic = async () => {
       if (newTopicName.value.trim()) {
         try {
+          // Tính toán order mới dựa trên order lớn nhất trong danh sách
+          const maxOrder = Math.max(...topics.value.map(topic => topic.order || 0), 0)
+          const newOrder = maxOrder + 1
+
           await topicStore.createTopic({
             name: newTopicName.value.trim(),
-            status: newTopicStatus.value
+            status: newTopicStatus.value,
+            order: newOrder
           });
+
+          // Reset form
           newTopicName.value = '';
           newTopicStatus.value = 'draft';
+
+          // Tải lại danh sách topic để hiển thị topic mới ở đầu
+          await loadTopics();
         } catch (error) {
           console.error('Failed to create topic:', error);
         }
@@ -949,7 +959,7 @@ export default defineComponent({
     }
 
     // Sắp xếp
-    const sortOrder = ref('asc')
+    const sortOrder = ref('desc')
     const toggleSortOrder = () => {
       sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
       loadTopics()
