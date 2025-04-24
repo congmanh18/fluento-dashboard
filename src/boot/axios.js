@@ -42,7 +42,14 @@ export const contentApi = {
   createLesson: (topicId, data) => api.post(`/content/topics/${topicId}/lessons`, data),
   updateLesson: (topicId, lessonId, data) => api.patch(`/content/topics/${topicId}/lessons/${lessonId}`, data),
   deleteLesson: (topicId, lessonId) => api.delete(`/content/topics/${topicId}/lessons/${lessonId}`),
-  reorderLessons: (topicId, data) => api.patch(`/content/topics/${topicId}/lessons/reorder`, data)
+  reorderLessons: (topicId, data) => api.patch(`/content/topics/${topicId}/lessons/reorder`, data),
+
+  // Dialogs
+  getDialogues: (params) => api.get('/content/dialogues', { params }),
+  createDialogue: (data) => api.post('/content/dialogues', data),
+  updateDialogue: (id, data) => api.patch(`/content/dialogues/${id}`, data),
+  deleteDialogue: (id) => api.delete(`/content/dialogues/${id}`),
+  reorderDialogues: (data) => api.patch('/content/dialogues/reorder', data)
 }
 
 export default ({ app }) => {

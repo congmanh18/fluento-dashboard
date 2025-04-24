@@ -21,8 +21,11 @@
           <!-- <SidebarItem to="/content/topics2" icon="topic" label="Topic & Lesson 2" /> -->
           <SidebarItem to="/content/dialogs" icon="chat" label="Dialogs" />
           <SidebarItem to="/content/stories" icon="book" label="Stories" />
-          <SidebarItem to="/content/vocabulary" icon="translate" label="Vocabulary" />
-      </SidebarGroup>
+          <SidebarItem to="/content/vocabulary" icon="spellcheck" label="Vocabulary" />
+          <SidebarItem to="/content/karaoke" icon="music_note" label="Karaoke" />
+          <SidebarItem to="/content/quiz" icon="quiz" label="Quiz" />
+          <SidebarItem to="/content/translation" icon="translate" label="Translation" />
+        </SidebarGroup>
 
       <!-- <SidebarGroup icon="view_in_ar" label="Templates">
           <SidebarItem to="/templates/template1" icon="view_in_ar" label="Template 1" />

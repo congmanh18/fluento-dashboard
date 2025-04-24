@@ -8,7 +8,7 @@
           v-model="filter"
           dense
           outlined
-          label="Search topic name"
+          label="Search dialogue name"
           class="full-width"
           @update:model-value="handleSearch"
         >
@@ -20,7 +20,7 @@
       <div class="col-2 q-px-sm">
         <q-btn
           color="primary"
-          label="Delete Topic"
+          label="Delete Dialogue"
           class="full-width"
           @click="showDeleteWarning"
         />
@@ -35,10 +35,10 @@
           <q-list>
             <q-item tag="label" v-ripple>
               <q-item-section>
-                <q-item-label>Topic</q-item-label>
+                <q-item-label>Dialogue</q-item-label>
               </q-item-section>
               <q-item-section avatar>
-                <q-checkbox v-model="visibleColumns.topicName" />
+                <q-checkbox v-model="visibleColumns.dialogueName" />
               </q-item-section>
             </q-item>
             <q-item tag="label" v-ripple>
@@ -62,9 +62,9 @@
       </div>
     </div>
 
-    <!-- Danh sách topic -->
-    <div class="topic-list">
-      <div class="topic-header row items-center q-pa-sm bg-grey-2">
+    <!-- Danh sách dialogue -->
+    <div class="dialogue-list">
+      <div class="dialogue-header row items-center q-pa-sm bg-grey-2">
         <div class="col-1 text-left">
           <div class="row q-gutter-sm">
             <q-btn
@@ -79,10 +79,8 @@
           </div>
         </div>
 
-        <!-- Chọn tất cả -->
-
-        <!-- Tên Topic -->
-        <div class="col-5" v-if="visibleColumns.topicName">Topic</div>
+        <!-- Tên Dialogue -->
+        <div class="col-5" v-if="visibleColumns.dialogueName">Dialogue</div>
 
         <!-- Trạng thái -->
         <div class="col-3 text-left" v-if="visibleColumns.status">
@@ -97,17 +95,16 @@
         <div class="col-1 text-left" v-else></div>
       </div>
 
-
-      <!-- Nút tạo topic mới -->
+      <!-- Nút tạo dialogue mới -->
       <div class="row items-center q-pa-sm">
         <div class="col-1 text-left"></div>
-        <div class="col-5" v-if="visibleColumns.topicName">
+        <div class="col-5" v-if="visibleColumns.dialogueName">
           <q-input
-            v-model="newTopicName"
+            v-model="newDialogueName"
             dense
             outlined
-            placeholder="New topic name"
-            @keyup.enter="createTopic"
+            placeholder="New dialogue name"
+            @keyup.enter="createDialogue"
             autofocus
           />
         </div>
@@ -116,13 +113,13 @@
         <div class="col-3 text-left" v-if="visibleColumns.status">
           <div class="row q-gutter-sm justify-center">
             <q-radio
-              v-model="newTopicStatus"
+              v-model="newDialogueStatus"
               val="draft"
               label="Draft"
               color="grey"
             />
             <q-radio
-              v-model="newTopicStatus"
+              v-model="newDialogueStatus"
               val="approved"
               label="Approved"
               color="positive"
@@ -130,7 +127,7 @@
           </div>
         </div>
 
-        <!-- Nút tạo topic mới -->
+        <!-- Nút tạo dialogue mới -->
         <div class="col-2 text-center" v-if="visibleColumns.actions">
           <div class="row justify-center">
             <q-btn
@@ -139,42 +136,42 @@
               round
               icon="add"
               color="positive"
-              @click="createTopic"
+              @click="createDialogue"
             />
           </div>
         </div>
       </div>
 
-      <!-- Danh sách topic -->
+      <!-- Danh sách dialogue -->
       <draggable
-        v-model="filteredTopics"
-        group="topics"
+        v-model="filteredDialogues"
+        group="dialogues"
         item-key="id"
         handle=".handle"
         @start="drag=true"
         @end="drag=false"
-        class="topic-items"
+        class="dialogue-items"
         :disabled="isDeleteMode"
       >
-        <!-- Thẻ topic -->
+        <!-- Thẻ dialogue -->
         <template #item="{ element }">
-          <q-card flat bordered class="q-mb-sm" :class="{ 'selected': selectedTopics.includes(element) }">
+          <q-card flat bordered class="q-mb-sm" :class="{ 'selected': selectedDialogues.includes(element) }">
             <q-card-section
               class="row items-center cursor-pointer"
-              @click="!editingTopic && toggleTopic(element)"
+              @click="!editingDialogue && toggleDialogue(element)"
             >
               <div class="col-1 text-left">
                 <q-icon name="drag_indicator" class="handle cursor-move" style="font-size: 24px;" />
               </div>
 
-              <!-- Tên topic -->
-              <div class="col-5 topic-name" v-if="visibleColumns.topicName">
-                <template v-if="editingTopic === element">
+              <!-- Tên dialogue -->
+              <div class="col-5 dialogue-name" v-if="visibleColumns.dialogueName">
+                <template v-if="editingDialogue === element">
                   <q-input
-                    v-model="editingTopicName"
+                    v-model="editingDialogueName"
                     dense
                     outlined
-                    @keyup.enter="saveTopic(element)"
+                    @keyup.enter="saveDialogue(element)"
                     autofocus
                   />
                 </template>
@@ -185,17 +182,17 @@
 
               <!-- Trạng thái -->
               <div class="col-3 text-left" v-if="visibleColumns.status">
-                <template v-if="editingTopic === element">
+                <template v-if="editingDialogue === element">
                   <div class="row q-gutter-sm justify-center">
                     <q-radio
-                      v-model="editingTopicStatus"
+                      v-model="editingDialogueStatus"
                       val="draft"
                       label="Draft"
                       color="grey"
                       @click.stop
                     />
                     <q-radio
-                      v-model="editingTopicStatus"
+                      v-model="editingDialogueStatus"
                       val="approved"
                       label="Approved"
                       color="positive"
@@ -214,14 +211,14 @@
               <!-- Nút thao tác -->
               <div class="col-2 text-center" v-if="visibleColumns.actions">
                 <div class="row justify-center">
-                  <template v-if="editingTopic === element">
+                  <template v-if="editingDialogue === element">
                     <q-btn
                       flat
                       dense
                       round
                       icon="close"
                       color="negative"
-                      @click.stop="cancelEditTopic"
+                      @click.stop="cancelEditDialogue"
                       class="q-ml-sm"
                     />
                     <q-btn
@@ -230,7 +227,7 @@
                       round
                       icon="check"
                       color="positive"
-                      @click.stop="saveTopic(element)"
+                      @click.stop="saveDialogue(element)"
                       :loading="isUpdating"
                       class="q-ml-sm"
                     />
@@ -241,42 +238,42 @@
                       dense
                       round
                       icon="edit"
-                      @click.stop="startEditTopic(element)"
+                      @click.stop="startEditDialogue(element)"
                       class="q-ml-sm"
                     />
                   </template>
                 </div>
               </div>
 
-              <!-- Chọn topic -->
+              <!-- Chọn dialogue -->
               <div class="col-1 text-left">
-                <q-checkbox v-model="selectedTopics" :val="element" @click.stop v-if="isDeleteMode" />
+                <q-checkbox v-model="selectedDialogues" :val="element" @click.stop v-if="isDeleteMode" />
               </div>
             </q-card-section>
 
-            <!-- Danh sách bài học -->
+            <!-- Danh sách dialog -->
             <q-slide-transition>
               <div v-show="element.expanded">
                 <q-separator />
                 <q-card-section class="q-pa-none">
-                  <div class="lesson-list">
-                    <!-- Nút tạo bài học mới -->
+                  <div class="dialog-list">
+                    <!-- Nút tạo dialog mới -->
                     <div class="row items-center q-pa-sm">
                       <div class="col-1 text-left"></div>
 
-                      <!-- Tên bài học -->
+                      <!-- Tên dialog -->
                       <div class="col-2">
                         <q-input
-                          v-model="newLessonName"
+                          v-model="newDialogName"
                           dense
                           outlined
-                          placeholder="New lesson name"
-                          @keyup.enter="createLesson(element)"
+                          placeholder="New dialog name"
+                          @keyup.enter="createDialog(element)"
                           autofocus
                         />
                       </div>
 
-                      <!-- Hình ảnh bài học -->
+                      <!-- Hình ảnh dialog -->
                       <div class="col-5 text-center">
                         <div class="column items-center">
                           <q-btn
@@ -293,9 +290,9 @@
                             style="display: none"
                             @change="handleFileUpload($event)"
                           />
-                          <div v-if="newLessonImageURL" class="image-preview">
+                          <div v-if="newDialogImageURL" class="image-preview">
                             <img
-                              :src="newLessonImageURL"
+                              :src="newDialogImageURL"
                               alt="Preview"
                               style="max-width: 100px; max-height: 100px; object-fit: contain;"
                               class="rounded-borders"
@@ -310,7 +307,7 @@
                         </div>
                       </div>
 
-                      <!-- Nút tạo bài học mới -->
+                      <!-- Nút tạo dialog mới -->
                       <div class="col-3 text-center">
                         <div class="row justify-center">
                           <q-btn
@@ -319,48 +316,48 @@
                             round
                             icon="add"
                             color="positive"
-                            @click="createLesson(element)"
+                            @click="createDialog(element)"
                           />
                         </div>
                       </div>
                     </div>
 
-                    <!-- Danh sách bài học -->
+                    <!-- Danh sách dialog -->
                     <draggable
-                      v-model="getDraggableLessons(element.id).value"
-                      group="lessons"
+                      v-model="getDraggableDialogs(element.id).value"
+                      group="dialogs"
                       item-key="id"
                       handle=".handle"
                       @start="drag=true"
-                      @end="drag=false; handleLessonDragEnd(element, getDraggableLessons(element.id).value)"
-                      class="lesson-items"
+                      @end="drag=false; handleDialogDragEnd(element, getDraggableDialogs(element.id).value)"
+                      class="dialog-items"
                       :disabled="isDeleteMode"
                     >
-                      <!-- Thẻ bài học -->
-                      <template #item="{ element: lesson, index }">
-                        <div class="row items-center q-pa-sm lesson-item" :class="{ 'selected': selectedLessons.includes(lesson) }">
+                      <!-- Thẻ dialog -->
+                      <template #item="{ element: dialog, index }">
+                        <div class="row items-center q-pa-sm dialog-item" :class="{ 'selected': selectedDialogs.includes(dialog) }">
                           <div class="col-1 text-left">
                             <q-icon name="drag_indicator" class="handle cursor-move" style="font-size: 24px;" />
                           </div>
-                          <!-- Tên bài học -->
-                          <div class="col-2 lesson-name">
-                            <template v-if="editingLesson === lesson">
+                          <!-- Tên dialog -->
+                          <div class="col-2 dialog-name">
+                            <template v-if="editingDialog === dialog">
                               <q-input
-                                v-model="editingLessonName"
+                                v-model="editingDialogName"
                                 dense
                                 outlined
-                                @keyup.enter="saveLesson(element, lesson)"
+                                @keyup.enter="saveDialog(element, dialog)"
                                 autofocus
                               />
                             </template>
                             <template v-else>
-                              {{ lesson.name }}
+                              {{ dialog.name }}
                             </template>
                           </div>
 
-                          <!-- Hình ảnh bài học -->
-                          <div class="col-5 text-center lesson-image">
-                            <template v-if="editingLesson === lesson">
+                          <!-- Hình ảnh dialog -->
+                          <div class="col-5 text-center dialog-image">
+                            <template v-if="editingDialog === dialog">
                               <div class="column items-center">
                                 <q-btn
                                   outline
@@ -376,9 +373,9 @@
                                   style="display: none"
                                   @change="handleFileUpload($event, true)"
                                 />
-                                <div v-if="editingLessonImageURL" class="image-preview">
+                                <div v-if="editingDialogImageURL" class="image-preview">
                                   <img
-                                    :src="editingLessonImageURL"
+                                    :src="editingDialogImageURL"
                                     alt="Preview"
                                     style="max-width: 100px; max-height: 100px; object-fit: contain;"
                                     class="rounded-borders"
@@ -394,8 +391,8 @@
                             </template>
                             <template v-else>
                               <img
-                                :src="lesson.imageURL"
-                                alt="lesson image"
+                                :src="dialog.imageURL"
+                                alt="dialog image"
                                 style="width: 50px; height: 50px; object-fit: cover;"
                                 class="rounded-borders"
                                 @error="handleImageError"
@@ -404,16 +401,16 @@
                           </div>
 
                           <!-- Nút thao tác -->
-                          <div class="col-3 text-center lesson-actions">
+                          <div class="col-3 text-center dialog-actions">
                             <div class="row justify-center">
-                              <template v-if="editingLesson === lesson">
+                              <template v-if="editingDialog === dialog">
                                 <q-btn
                                   flat
                                   dense
                                   round
                                   icon="close"
                                   color="negative"
-                                  @click="cancelEditLesson"
+                                  @click="cancelEditDialog"
                                   class="q-ml-sm"
                                 />
                               </template>
@@ -423,7 +420,7 @@
                                   dense
                                   round
                                   icon="edit"
-                                  @click="startEditLesson(element, lesson)"
+                                  @click="startEditDialog(element, dialog)"
                                 />
                               </template>
                             </div>
@@ -445,7 +442,7 @@
         <q-btn
           color="primary"
           label="Delete selected"
-          :disable="selectedTopics.length === 0"
+          :disable="selectedDialogues.length === 0"
           @click="openDeleteConfirmDialog"
         />
       </div>
@@ -466,20 +463,20 @@
             class="q-mb-sm animate-shake"
           />
           <div class="text-center text-h6 text-negative text-weight-bold q-mt-sm">
-            Are you sure you want to delete {{ selectedTopics.length > 1 ? 'these topics' : 'this topic' }}?
+            Are you sure you want to delete {{ selectedDialogues.length > 1 ? 'these dialogues' : 'this dialogue' }}?
           </div>
         </q-card-section>
 
         <!-- Nhập tên xác nhận -->
-        <q-card-section v-if="selectedTopics.length > 0" class="q-px-md">
+        <q-card-section v-if="selectedDialogues.length > 0" class="q-px-md">
           <div class="text-subtitle2 q-mb-sm text-center text-weight-medium">
-            Please enter "{{ selectedTopics[0].name }}" to confirm:
+            Please enter "{{ selectedDialogues[0].name }}" to confirm:
           </div>
           <q-input
             dense
-            v-model="confirmTopicName"
-            label="Topic Name"
-            :rules="[val => val === selectedTopics[0].name || 'Topic name does not match']"
+            v-model="confirmDialogueName"
+            label="Dialogue Name"
+            :rules="[val => val === selectedDialogues[0].name || 'Dialogue name does not match']"
             autofocus
             outlined
             class="q-mx-sm"
@@ -528,7 +525,7 @@
             WARNING
           </div>
           <div class="text-center text-h6 text-negative text-weight-bold q-mt-sm">
-            This action will permanently delete all topics and their lessons.
+            This action will permanently delete all dialogues and their dialogs.
           </div>
         </q-card-section>
 
@@ -558,174 +555,134 @@
       </q-card>
     </q-dialog>
 
-
   </div>
 </template>
 
 <script>
 import { defineComponent, computed, ref } from 'vue'
-import { useTopicStore } from '../stores/topicStore'
+import { useDialogStore } from '../stores/dialogStore'
 import { useFileStore } from '../stores/fileStore'
 import { Notify } from 'quasar'
 import draggable from 'vuedraggable'
 import { debounce } from 'lodash'
 
 export default defineComponent({
-  name: 'TopicTable',
+  name: 'DialogTable',
   components: {
     draggable
   },
 
   setup() {
-    const topicStore = useTopicStore()
+    // Initialize stores
+    const dialogStore = useDialogStore()
     const fileStore = useFileStore()
-    const deleteType = ref('topic')
 
+    // Basic state variables
     const filter = ref('')
     const drag = ref(false)
+    const sortOrder = ref('desc')
+    const isDeleteMode = ref(false)
+    const deleteDialog = ref(false)
+    const deleteWarningDialog = ref(false)
+    const isDeleting = ref(false)
+    const isUpdating = ref(false)
+    const selectAll = ref(false)
+    const selectedDialogues = ref([])
+    const selectedDialogs = ref([])
+    const confirmDialogueName = ref('')
 
-    // Cột hiển thị
+    // Column visibility
     const visibleColumns = ref({
-      topicName: true,
+      dialogueName: true,
       status: true,
       actions: true
     })
 
-    // Topic states
-    const selectedTopic = ref(null)
-    const editingTopic = ref(null)
-    const editingTopicName = ref('')
-    const editingTopicStatus = ref('draft')
-    const newTopicName = ref('')
-    const newTopicStatus = ref('draft')
-    const isCreatingTopic = ref(false)
-    const isCreatingLesson = ref({})
+    // Dialogue states
+    const selectedDialogue = ref(null)
+    const editingDialogue = ref(null)
+    const editingDialogueName = ref('')
+    const editingDialogueStatus = ref('draft')
+    const newDialogueName = ref('')
+    const newDialogueStatus = ref('draft')
+    const isCreatingDialogue = ref(false)
+    const isCreatingDialog = ref({})
 
-    // Lesson states
-    const selectedLesson = ref(null)
-    const editingLesson = ref(null)
-    const editingLessonName = ref('')
-    const editingLessonImageURL = ref('')
-    const newLessonName = ref('')
-    const newLessonImageURL = ref('')
+    // Dialog states
+    const selectedDialog = ref(null)
+    const editingDialog = ref(null)
+    const editingDialogName = ref('')
+    const editingDialogImageURL = ref('')
+    const newDialogName = ref('')
+    const newDialogImageURL = ref('')
     const uploadProgress = computed(() => fileStore.uploadProgress)
 
-    // Trạng thái
+    // Status options
     const statusOptions = [
       { label: 'Draft', value: 'draft' },
       { label: 'Approved', value: 'approved' },
     ]
 
-    // Danh sách topic
-    const topics = computed(() => topicStore.topics)
-
-    // Lọc topic
-    const filteredTopics = computed({
-      get: () => {
-        let filtered = topics.value
-
-        if (filter.value) {
-          const searchTerm = filter.value.toLowerCase()
-          filtered = filtered.filter(topic =>
-            topic.name.toLowerCase().includes(searchTerm)
-          )
-        }
-
-        return filtered
+    // Mock data for dialogues
+    const dialogues = ref([
+      {
+        id: 1,
+        name: 'Sample Dialogue 1',
+        status: 'draft',
+        expanded: false
       },
+      {
+        id: 2,
+        name: 'Sample Dialogue 2',
+        status: 'approved',
+        expanded: false
+      }
+    ])
+
+    // Mock data for dialogs
+    const dialogueDialogs = ref({
+      1: [
+        {
+          id: 1,
+          name: 'Sample Dialog 1',
+          imageURL: 'https://placehold.co/50x50/png?text=Img1'
+        }
+      ],
+      2: [
+        {
+          id: 2,
+          name: 'Sample Dialog 2',
+          imageURL: 'https://placehold.co/50x50/png?text=Img2'
+        }
+      ]
+    })
+
+    // Computed properties
+    const filteredDialogues = computed({
+      get: () => dialogues.value,
       set: (value) => {
-        topicStore.reorderTopics(value)
+        // Mock reorder functionality
+        dialogues.value = value
       }
     })
 
-    // Tạo topic
-    const createTopic = async () => {
-      if (newTopicName.value.trim()) {
-        try {
-          // Tính toán order mới dựa trên order lớn nhất trong danh sách
-          const maxOrder = Math.max(...topics.value.map(topic => topic.order || 0), 0)
-          const newOrder = maxOrder + 1
-
-          await topicStore.createTopic({
-            name: newTopicName.value.trim(),
-            status: newTopicStatus.value,
-            order: newOrder
-          });
-
-          // Reset form
-          newTopicName.value = '';
-          newTopicStatus.value = 'draft';
-
-          // Tải lại danh sách topic để hiển thị topic mới ở đầu
-          await loadTopics();
-        } catch (error) {
-          console.error('Failed to create topic:', error);
-        }
-      }
+    // Mock functions
+    const createDialogue = () => {
+      console.log('Create dialogue:', newDialogueName.value, newDialogueStatus.value)
     }
 
-    // Tạo bài học
-    const createLesson = async (topic) => {
-      if (newLessonName.value.trim()) {
-        try {
-          const response = await topicStore.createLesson(topic.id, {
-            name: newLessonName.value.trim(),
-            image_url: newLessonImageURL.value || null
-          });
-
-          if (response.code === 200) {
-            // Tải lại danh sách bài học của topic
-            await loadLessons(topic.id);
-
-            // Reset form
-            newLessonName.value = '';
-            newLessonImageURL.value = '';
-
-            Notify.create({
-              type: 'positive',
-              message: 'Lesson created successfully'
-            });
-          }
-        } catch (error) {
-          console.error('Failed to create lesson:', error);
-          Notify.create({
-            type: 'negative',
-            message: 'Failed to create lesson'
-          });
-        }
-      }
+    const createDialog = () => {
+      console.log('Create dialog:', newDialogName.value, newDialogImageURL.value)
     }
 
-    // Cập nhật trạng thái topic
-    const updateTopicStatus = (topic) => {
-      topicStore.updateTopic({
-        ...topic,
-        id: topic.id.toString(),
-        status: topic.status
-      })
+    const updateDialogueStatus = () => {
+      console.log('Update dialogue status')
     }
 
-    // Tạo bài học
-    const toggleTopic = async (topic) => {
-      topic.expanded = !topic.expanded;
-      if (topic.expanded) {
-        try {
-          const lessons = await loadLessons(topic.id);
-          // Khởi tạo topicLessons cho topic này
-          if (!topicLessons.value[topic.id]) {
-            topicLessons.value[topic.id] = lessons;
-          }
-        } catch (error) {
-          console.error('Failed to fetch lessons:', error);
-          Notify.create({
-            type: 'negative',
-            message: 'Failed to load lessons'
-          });
-        }
-      }
+    const toggleDialogue = (dialogue) => {
+      dialogue.expanded = !dialogue.expanded
     }
 
-    // Lấy màu trạng thái
     const getStatusColor = (status) => {
       switch (status) {
         case 'draft': return 'grey'
@@ -734,416 +691,186 @@ export default defineComponent({
       }
     }
 
-    // Lấy nhãn trạng thái
     const getStatusLabel = (status) => {
       const option = statusOptions.find(opt => opt.value === status)
       return option ? option.label : status
     }
 
-    // Xử lý lỗi hình ảnh
     const handleImageError = (event) => {
       event.target.src = 'https://placehold.co/50x50/png?text=No+Img'
     }
 
-    // Cập nhật thứ tự bài học
-    const updateLessonOrder = (topic) => {
-      if (topic.lessons) {
-        topic.lessons.forEach((lesson, index) => {
-          lesson.order = index + 1
-        })
-      }
+    const startEditDialogue = (dialogue) => {
+      console.log('Start edit dialogue:', dialogue)
     }
 
-    // Chỉnh sửa topic
-    const startEditTopic = (topic) => {
-      editingTopic.value = topic;
-      editingTopicName.value = topic.name;
-      editingTopicStatus.value = topic.status;
-    };
-
-    const isUpdating = ref(false)
-
-    // Lưu topic
-    const saveTopic = async (topic) => {
-      if (editingTopicName.value.trim() || editingTopicStatus.value !== topic.status) {
-        isUpdating.value = true;
-        try {
-          await topicStore.updateTopic({
-            ...topic,
-            name: editingTopicName.value.trim() || topic.name,
-            status: editingTopicStatus.value
-          });
-          cancelEditTopic();
-        } catch (error) {
-          console.error('Failed to update topic:', error);
-        } finally {
-          isUpdating.value = false;
-        }
-      } else {
-        cancelEditTopic();
-      }
-    };
-
-    // Hủy chỉnh sửa topic
-    const cancelEditTopic = () => {
-      editingTopic.value = null;
-      editingTopicName.value = '';
-      editingTopicStatus.value = 'draft';
-    };
-
-    // Chỉnh sửa bài học
-    const startEditLesson = (topic, lesson) => {
-      editingLesson.value = lesson
-      editingLessonName.value = lesson.name
-      editingLessonImageURL.value = lesson.imageURL
+    const saveDialogue = () => {
+      console.log('Save dialogue')
     }
 
-    // Lưu bài học
-    const saveLesson = async (topic, lesson) => {
-      if (editingLessonName.value.trim()) {
-        try {
-          const response = await topicStore.updateLesson(topic.id, {
-            ...lesson,
-            id: lesson.id,
-            name: editingLessonName.value.trim(),
-            image_url: editingLessonImageURL.value || lesson.image_url,
-            order: lesson.order || 0
-          });
-
-          if (response.code === 200) {
-            // Cập nhật bài học trong danh sách bài học của topic
-            if (topicLessons.value[topic.id]) {
-              const index = topicLessons.value[topic.id].findIndex(l => l.id === lesson.id);
-              if (index !== -1) {
-                topicLessons.value[topic.id][index] = {
-                  ...topicLessons.value[topic.id][index],
-                  name: editingLessonName.value.trim(),
-                  image_url: editingLessonImageURL.value || lesson.image_url
-                };
-              }
-            }
-
-            // Hủy chỉnh sửa bài học
-            cancelEditLesson();
-            Notify.create({
-              type: 'positive',
-              message: 'Lesson updated successfully'
-            });
-          }
-        } catch (error) {
-          console.error('Failed to update lesson:', error);
-          Notify.create({
-            type: 'negative',
-            message: 'Failed to update lesson'
-          });
-        }
-      } else {
-        cancelEditLesson();
-      }
-    };
-
-    // Xóa bài học
-    const deleteLesson = async (topicId, lessonId) => {
-      try {
-        const response = await topicStore.deleteLesson(topicId, lessonId);
-        if (response.code === 200) {
-          // Xóa bài học khỏi danh sách bài học của topic
-          if (topicLessons.value[topicId]) {
-            topicLessons.value[topicId] = topicLessons.value[topicId].filter(l => l.id !== lessonId);
-          }
-
-          Notify.create({
-            type: 'positive',
-            message: 'Lesson deleted successfully'
-          });
-        }
-      } catch (error) {
-        console.error('Failed to delete lesson:', error);
-        Notify.create({
-          type: 'negative',
-          message: 'Failed to delete lesson'
-        });
-      }
-    };
-
-    const cancelEditLesson = () => {
-      editingLesson.value = null
-      editingLessonName.value = ''
-      editingLessonImageURL.value = ''
+    const cancelEditDialogue = () => {
+      console.log('Cancel edit dialogue')
     }
 
-    // Chế độ xóa
-    const isDeleteMode = ref(false)
-    const selectedTopics = ref([])
-    const selectedLessons = ref([])
-    const selectAll = ref(false)
-    const confirmTopicName = ref('')
-    const deleteDialog = ref(false)
-    const isDeleting = ref(false)
-
-    const canDelete = computed(() => {
-      if (selectedTopics.value.length === 0) return false
-      return confirmTopicName.value === selectedTopics.value[0].name
-    })
-
-    // Chuyển chế độ xóa
-    const toggleDeleteMode = () => {
-      isDeleteMode.value = !isDeleteMode.value
-      if (!isDeleteMode.value) {
-        selectedTopics.value = []
-        selectAll.value = false
-      }
+    const startEditDialog = () => {
+      console.log('Start edit dialog')
     }
 
-    // Chọn tất cả
-    const toggleSelectAll = (value) => {
-      if (value) {
-        selectedTopics.value = [...filteredTopics.value]
-      } else {
-        selectedTopics.value = []
-      }
+    const saveDialog = () => {
+      console.log('Save dialog')
     }
 
-    // Hủy xóa
-    const cancelDelete = () => {
-      confirmTopicName.value = ''
+    const cancelEditDialog = () => {
+      console.log('Cancel edit dialog')
     }
 
-    // Xác nhận xóa
-    const confirmDelete = async () => {
-      if (selectedTopics.value.length > 0) {
-        isDeleting.value = true;
-        try {
-          for (const topic of selectedTopics.value) {
-            await topicStore.deleteTopic(topic.id);
-          }
-          Notify.create({
-            type: 'positive',
-            message: 'Topics deleted successfully'
-          });
-          toggleDeleteMode();
-          confirmTopicName.value = '';
-        } catch (error) {
-          console.error('Failed to delete topics:', error);
-        } finally {
-          isDeleting.value = false;
-        }
-      }
+    const handleFileUpload = () => {
+      console.log('Handle file upload')
     }
 
-    // Xử lý tải lên hình ảnh
-    const handleFileUpload = async (event, isEditing = false) => {
-      const file = event.target.files[0]
-      if (!file) return
-
-      try {
-        const imageUrl = await fileStore.uploadFile(file)
-        if (isEditing) {
-          editingLessonImageURL.value = imageUrl
-        } else {
-          newLessonImageURL.value = imageUrl
-        }
-      } catch (error) {
-        console.error('Upload failed:', error)
-      }
-    }
-
-    // Sắp xếp
-    const sortOrder = ref('desc')
     const toggleSortOrder = () => {
       sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
-      loadTopics()
     }
 
-    // Xử lý tìm kiếm
-    const handleSearch = debounce(async () => {
-      await topicStore.fetchTopics({
-        sort: sortOrder.value,
-        search: filter.value
-      })
-    }, 300)
-
-    // Tải topic
-    const loadTopics = async () => {
-      await topicStore.fetchTopics({
-        sort: sortOrder.value,
-        search: filter.value
-      })
+    const handleSearch = () => {
+      console.log('Handle search:', filter.value)
     }
 
-    // Tải bài học
-    const loadLessons = async (topicId) => {
-      try {
-        const response = await topicStore.fetchLessons(topicId)
-
-        if (response.detail) {
-          // Cập nhật danh sách bài học
-          if (!topicLessons.value[topicId]) {
-            topicLessons.value[topicId] = []
-          }
-          topicLessons.value[topicId] = response.detail.rows || []
-        }
-
-        return response.detail?.rows || []
-      } catch (error) {
-        console.error('Failed to load lessons:', error)
-        return []
-      }
+    const loadDialogues = () => {
+      console.log('Load dialogues')
     }
 
-    const topicLessons = ref({})
-
-    // Lấy danh sách bài học của topic
-    const getTopicLessons = (topicId) => {
-      if (!topicLessons.value[topicId]) {
-        topicLessons.value[topicId] = topicStore.lessons[topicId] || []
-      }
-      return topicLessons.value[topicId]
+    const loadDialogs = () => {
+      console.log('Load dialogs')
     }
 
-    // Lấy danh sách bài học có thể sắp xếp
-    const getDraggableLessons = (topicId) => computed({
-      get: () => topicLessons.value[topicId] || [],
+    const getDialogueDialogs = (dialogueId) => {
+      return dialogueDialogs.value[dialogueId] || []
+    }
+
+    const getDraggableDialogs = (dialogueId) => computed({
+      get: () => dialogueDialogs.value[dialogueId] || [],
       set: (value) => {
-        topicLessons.value[topicId] = value
+        dialogueDialogs.value[dialogueId] = value
       }
     })
 
-    // Sắp xếp topic
-    const debouncedReorder = debounce((topics) => {
-      topicStore.reorderTopics(topics);
-    }, 1000);
+    const handleDragEnd = () => {
+      console.log('Handle drag end')
+    }
 
-    // Sắp xếp topic
-    const handleDragEnd = (topics) => {
-      // Cập nhật trạng thái local ngay lập tức
-      topicStore.topics = topics.map((topic, index) => ({
-        ...topic,
-        order: index + 1
-      }));
+    const handleDialogDragEnd = () => {
+      console.log('Handle dialog drag end')
+    }
 
-      // Debounce the API call
-      debouncedReorder(topics);
-    };
-
-    // Sắp xếp bài học
-    const debouncedReorderLessons = debounce((topicId, lessons) => {
-      topicStore.reorderLessons(topicId, lessons);
-    }, 1000);
-
-    const handleLessonDragEnd = (topic, lessons) => {
-      // Cập nhật trạng thái local ngay lập tức
-      topicLessons.value[topic.id] = lessons.map((lesson, index) => ({
-        ...lesson,
-        order: index + 1
-      }));
-
-      // Sắp xếp bài học
-      debouncedReorderLessons(topic.id, lessons);
-    };
-
-    // Khởi tạo
-    loadTopics()
-
-    // Thêm các biến state mới
-    const deleteWarningDialog = ref(false)
-
-    // Function hiển thị cảnh báo ban đầu
     const showDeleteWarning = () => {
       deleteWarningDialog.value = true
     }
 
-    // Function kích hoạt chế độ xóa
     const activateDeleteMode = () => {
       isDeleteMode.value = true
-      selectedTopics.value = []
-      selectAll.value = false
     }
 
-    // Function hủy chế độ xóa
     const cancelDeleteMode = () => {
       isDeleteMode.value = false
-      selectedTopics.value = []
-      selectAll.value = false
     }
 
-    // Function mở dialog xác nhận xóa
     const openDeleteConfirmDialog = () => {
-      if (selectedTopics.value.length > 0) {
-        confirmTopicName.value = ''
-        deleteDialog.value = true
+      deleteDialog.value = true
+    }
+
+    const toggleSelectAll = (value) => {
+      if (value) {
+        selectedDialogues.value = [...dialogues.value]
+      } else {
+        selectedDialogues.value = []
       }
     }
 
+    const cancelDelete = () => {
+      confirmDialogueName.value = ''
+    }
+
+    const confirmDelete = () => {
+      console.log('Confirm delete')
+    }
+
+    const canDelete = computed(() => {
+      if (selectedDialogues.value.length === 0) return false
+      return confirmDialogueName.value === selectedDialogues.value[0].name
+    })
+
     return {
-      topics,
-      filteredTopics,
+      // State variables
+      dialogues,
+      filteredDialogues,
       filter,
       drag,
       visibleColumns,
-      toggleTopic,
+      sortOrder,
+      isDeleteMode,
+      deleteDialog,
+      deleteWarningDialog,
+      isDeleting,
+      isUpdating,
+      selectAll,
+      selectedDialogues,
+      selectedDialogs,
+      confirmDialogueName,
+      canDelete,
+
+      // Dialogue states
+      selectedDialogue,
+      editingDialogue,
+      editingDialogueName,
+      editingDialogueStatus,
+      newDialogueName,
+      newDialogueStatus,
+      isCreatingDialogue,
+      isCreatingDialog,
+
+      // Dialog states
+      selectedDialog,
+      editingDialog,
+      editingDialogName,
+      editingDialogImageURL,
+      newDialogName,
+      newDialogImageURL,
+      uploadProgress,
+
+      // Options
+      statusOptions,
+
+      // Functions
+      createDialogue,
+      createDialog,
+      updateDialogueStatus,
+      toggleDialogue,
       getStatusColor,
       getStatusLabel,
       handleImageError,
-      updateLessonOrder,
-      updateTopicStatus,
-      isUpdating,
-      // Chế độ xóa
-      isDeleteMode,
-      selectedTopics,
-      selectedLessons,
-      selectAll,
-      confirmTopicName,
-      canDelete,
-      toggleDeleteMode,
-      toggleSelectAll,
-      cancelDelete,
-      confirmDelete,
-      isDeleting,
-
-      // Chỉnh sửa topic
-      editingTopic,
-      editingTopicName,
-      editingTopicStatus,
-      statusOptions,
-      startEditTopic,
-      saveTopic,
-      cancelEditTopic,
-      // Tạo topic/bài học
-      newTopicName,
-      newTopicStatus,
-      newLessonName,
-      newLessonImageURL,
-      isCreatingTopic,
-      isCreatingLesson,
-      createTopic,
-      createLesson,
-      // Chỉnh sửa bài học
-      editingLesson,
-      editingLessonName,
-      editingLessonImageURL,
-      startEditLesson,
-      saveLesson,
-      cancelEditLesson,
-      // Xác nhận xóa
-      deleteDialog,
-      uploadProgress,
+      startEditDialogue,
+      saveDialogue,
+      cancelEditDialogue,
+      startEditDialog,
+      saveDialog,
+      cancelEditDialog,
       handleFileUpload,
-      // Sắp xếp
-      sortOrder,
       toggleSortOrder,
       handleSearch,
-      loadTopics,
-      getTopicLessons,
+      loadDialogues,
+      loadDialogs,
+      getDialogueDialogs,
+      getDraggableDialogs,
       handleDragEnd,
-      handleLessonDragEnd,
-      topicLessons,
-      getDraggableLessons,
-      deleteWarningDialog,
+      handleDialogDragEnd,
       showDeleteWarning,
       activateDeleteMode,
       cancelDeleteMode,
-      openDeleteConfirmDialog
+      openDeleteConfirmDialog,
+      toggleSelectAll,
+      cancelDelete,
+      confirmDelete
     }
   }
 })

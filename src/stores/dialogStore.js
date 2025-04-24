@@ -4,17 +4,17 @@ import { debounce } from 'lodash';
 import { useLanguageStore } from './language';
 import { contentApi } from 'src/boot/axios';
 
-export const useTopicStore = defineStore('topics', {
+export const useDialogStore = defineStore('dialogs', {
   state: () => ({
-    topics: [],
+    dialogues: [],
     pagination: {
-      limit: 20,
+      limit: 10,
       page: 1,
-      sort: 'desc',
+      sort: 'asc',
       total_rows: 0,
       total_pages: 0
     },
-    lessons: {},
+    dialogs: {},
     lessonPagination: {},
     selectedTopic: null,
     topicName: '',
@@ -35,17 +35,17 @@ export const useTopicStore = defineStore('topics', {
 
   actions: {
     // Lấy danh sách topic
-    async fetchTopics(params = {}) {
+    async fetchDialogue(params = {}) {
       try {
         const { limit = 20, page = 1, sort = 'asc', search = '' } = params;
-        const response = await contentApi.getTopics({
+        const response = await contentApi.getDialogue({
           limit,
           page,
           sort,
           search
         });
 
-        this.topics = response.detail.rows;
+        this.dialogue = response.detail.rows;
         this.pagination = {
           limit: response.detail.limit,
           page: response.detail.page,
@@ -69,7 +69,7 @@ export const useTopicStore = defineStore('topics', {
         });
 
         // Cập nhật danh sách topic
-        await this.fetchTopics({
+        await this.fetchDialogue({
           limit: this.pagination.limit,
           page: this.pagination.page,
           sort: this.pagination.sort
@@ -95,7 +95,7 @@ export const useTopicStore = defineStore('topics', {
             message: 'Topic updated successfully'
           });
           // Cập nhật danh sách topic
-          await this.fetchTopics({
+          await this.fetchDialogue({
             limit: this.pagination.limit,
             page: this.pagination.page,
             sort: this.pagination.sort
@@ -113,11 +113,11 @@ export const useTopicStore = defineStore('topics', {
         const response = await contentApi.deleteTopic(id);
         if (response.code === 200) {
           // Xóa topic khỏi danh sách topic
-          this.topics = this.topics.filter(topic => topic.id !== id);
+          this.dialogue = this.dialogue.filter(topic => topic.id !== id);
           // Cập nhật phân trang nếu cần
-          if (this.topics.length === 0 && this.pagination.page > 1) {
+          if (this.dialogue.length === 0 && this.pagination.page > 1) {
             this.pagination.page -= 1;
-            await this.fetchTopics({
+            await this.fetchDialogue({
               limit: this.pagination.limit,
               page: this.pagination.page,
               sort: this.pagination.sort
@@ -131,39 +131,39 @@ export const useTopicStore = defineStore('topics', {
     },
 
     // Sắp xếp lại topic
-    async reorderTopics(topics) {
+    async reorderDialogue(dialogue) {
       try {
         // Cập nhật trạng thái local trước
-        const totalTopics = topics.length;
-        const reorderedTopics = topics.map((topic, index) => ({
+        const totalDialogue = dialogue.length;
+        const reorderedDialogue = dialogue.map((topic, index) => ({
           ...topic,
-          order: totalTopics - index
+          order: totalDialogue - index
         }));
 
         // Chuẩn bị dữ liệu cho API
-        const reorderData = reorderedTopics.map(topic => ({
+        const reorderData = reorderedDialogue.map(topic => ({
           id: topic.id,
           order: topic.order
         }));
 
-        const response = await contentApi.reorderTopics(reorderData);
+        const response = await contentApi.reorderDialogue(reorderData);
         if (response.code === 200) {
           // Cập nhật trạng thái local với order mới
-          this.topics = reorderedTopics;
+          this.dialogue = reorderedDialogue;
 
           Notify.create({
             type: 'positive',
-            message: 'Topics reordered successfully'
+            message: 'Dialogue reordered successfully'
           });
         }
       } catch (error) {
-        console.error('Failed to reorder topics:', error);
+        console.error('Failed to reorder dialogue:', error);
         Notify.create({
           type: 'negative',
-          message: 'Failed to reorder topics'
+          message: 'Failed to reorder dialogue'
         });
         // Quay lại trạng thái trước đó trên lỗi
-        await this.fetchTopics({
+        await this.fetchDialogue({
           limit: this.pagination.limit,
           page: this.pagination.page,
           sort: this.pagination.sort
@@ -172,15 +172,15 @@ export const useTopicStore = defineStore('topics', {
     },
 
     // Xử lý kết thúc sắp xếp
-    handleDragEnd(topics) {
-      this.topics = topics;
-      this.reorderTopics(topics);
+    handleDragEnd(dialogue) {
+      this.dialogue = dialogue;
+      this.reorderDialogue(dialogue);
     },
 
     // Sắp xếp topic theo thứ tự
-    sortTopicsByOrder(order) {
+    sortDialogueByOrder(order) {
       this.pagination.sort = order;
-      this.fetchTopics({
+      this.fetchDialogue({
         limit: this.pagination.limit,
         page: this.pagination.page,
         sort: order
@@ -188,16 +188,16 @@ export const useTopicStore = defineStore('topics', {
     },
 
     // Lấy danh sách bài học
-    async fetchLessons(topicId, params = {}) {
+    async fetchDialogs(topicId, params = {}) {
       try {
         const { limit = 10, page = 1, sort = 'asc' } = params;
-        const response = await contentApi.getLessons(topicId, {
+        const response = await contentApi.getDialogs(topicId, {
           limit,
           page,
           sort
         });
 
-        this.lessons[topicId] = response.detail.rows;
+        this.dialogs[topicId] = response.detail.rows;
         this.lessonPagination[topicId] = {
           limit: response.detail.limit,
           page: response.detail.page,
@@ -227,7 +227,7 @@ export const useTopicStore = defineStore('topics', {
             message: 'Lesson created successfully'
           });
           // Cập nhật danh sách bài học
-          await this.fetchLessons(topicId, {
+          await this.fetchDialogs(topicId, {
             limit: this.lessonPagination[topicId]?.limit || 10,
             page: this.lessonPagination[topicId]?.page || 1,
             sort: this.lessonPagination[topicId]?.sort || 'asc'
@@ -255,7 +255,7 @@ export const useTopicStore = defineStore('topics', {
             message: 'Lesson updated successfully'
           });
           // Cập nhật danh sách bài học
-          await this.fetchLessons(topicId, {
+          await this.fetchDialogs(topicId, {
             limit: this.lessonPagination[topicId]?.limit || 10,
             page: this.lessonPagination[topicId]?.page || 1,
             sort: this.lessonPagination[topicId]?.sort || 'asc'
@@ -277,7 +277,7 @@ export const useTopicStore = defineStore('topics', {
             message: 'Lesson deleted successfully'
           });
           // Cập nhật danh sách bài học
-          await this.fetchLessons(topicId, {
+          await this.fetchDialogs(topicId, {
             limit: this.lessonPagination[topicId]?.limit || 10,
             page: this.lessonPagination[topicId]?.page || 1,
             sort: this.lessonPagination[topicId]?.sort || 'asc'
@@ -290,41 +290,41 @@ export const useTopicStore = defineStore('topics', {
     },
 
     // Sắp xếp lại bài học
-    async reorderLessons(topicId, lessons) {
+    async reorderDialogs(topicId, dialogs) {
       try {
         // Cập nhật trạng thái local trước
-        this.lessons[topicId] = lessons.map((lesson, index) => ({
+        this.dialogs[topicId] = dialogs.map((lesson, index) => ({
           ...lesson,
           order: index + 1
         }));
 
         // Chuẩn bị dữ liệu cho API
-        const reorderData = lessons.map(lesson => ({
+        const reorderData = dialogs.map(lesson => ({
           id: lesson.id,
           order: lesson.order
         }));
 
-        const response = await contentApi.reorderLessons(topicId, reorderData);
+        const response = await contentApi.reorderDialogs(topicId, reorderData);
         if (response.code === 200) {
           Notify.create({
             type: 'positive',
-            message: 'Lessons reordered successfully'
+            message: 'Dialogs reordered successfully'
           });
           // Cập nhật danh sách bài học để đảm bảo tính nhất quán
-          await this.fetchLessons(topicId, {
+          await this.fetchDialogs(topicId, {
             limit: this.lessonPagination[topicId]?.limit || 10,
             page: this.lessonPagination[topicId]?.page || 1,
             sort: this.lessonPagination[topicId]?.sort || 'asc'
           });
         }
       } catch (error) {
-        console.error('Failed to reorder lessons:', error);
+        console.error('Failed to reorder dialogs:', error);
         Notify.create({
           type: 'negative',
-          message: 'Failed to reorder lessons'
+          message: 'Failed to reorder dialogs'
         });
         // Quay lại trạng thái trước đó trên lỗi
-        await this.fetchLessons(topicId, {
+        await this.fetchDialogs(topicId, {
           limit: this.lessonPagination[topicId]?.limit || 10,
           page: this.lessonPagination[topicId]?.page || 1,
           sort: this.lessonPagination[topicId]?.sort || 'asc'

@@ -14,7 +14,7 @@ import { useTopicStore } from '../../stores/topicStore'
 import TopicLesson from '../../components/Topic-Lesson.vue'
 
 export default defineComponent({
-  name: 'Template3',
+  name: 'Topic & Lesson Management',
 
   components: {
     TopicLesson
