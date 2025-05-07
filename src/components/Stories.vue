@@ -196,7 +196,7 @@
     <!-- Dialog list -->
     <div class="dialogue-list q-mt-md">
       <div class="dialogue-header row items-center q-pa-sm bg-grey-2">
-        <div class="col-1 text-center">
+        <div class="col-1 text-left">
           <div class="row q-gutter-sm">
             <q-btn
               flat
@@ -216,7 +216,7 @@
         </div>
 
         <!-- Status -->
-        <div class="col-2 text-center" v-if="visibleColumns.status">
+        <div class="col-2" v-if="visibleColumns.status">
           <div class="text-weight-bold">Status</div>
         </div>
 
@@ -226,7 +226,7 @@
         </div>
 
         <!-- Image -->
-        <div class="col-2 text-center" v-if="visibleColumns.image">
+        <div class="col-1 text-center" v-if="visibleColumns.image">
           <div class="text-weight-bold">Image</div>
         </div>
 
@@ -236,7 +236,7 @@
         </div>
 
         <!-- Actions -->
-        <div class="col-1 text-center" v-if="visibleColumns.actions">
+        <div class="col-2 text-center" v-if="visibleColumns.actions">
           <div class="text-weight-bold">Actions</div>
         </div>
       </div>
@@ -261,7 +261,7 @@
               <!-- Dialog Result -->
               <div class="col-3 dialog-cell" v-if="visibleColumns.dialogResult">
                 <div class="dialog-result">
-                  <div v-for="(line, index) in element.dialog" :key="index">
+                  <div v-for="(line, index) in element.dialogResult" :key="index">
                     <span class="text-weight-bold">{{ line.speaker }}:</span> {{ line.text }}
                   </div>
                 </div>
@@ -302,7 +302,7 @@
               </div>
 
               <!-- Image -->
-              <div class="col-2 text-center" v-if="visibleColumns.image">
+              <div class="col-1 text-center" v-if="visibleColumns.image">
                 <div class="row q-gutter-sm justify-center">
                   <q-img :src="element.image" />
                 </div>
@@ -325,7 +325,7 @@
               </div>
 
               <!-- Actions -->
-              <div class="col-1 text-center" v-if="visibleColumns.actions">
+              <div class="col-2 text-center" v-if="visibleColumns.actions">
                 <q-btn
                   flat
                   dense
@@ -387,14 +387,10 @@
 import { defineComponent, computed, ref, watch } from 'vue'
 import { useDialogStore } from '../stores/dialogue'
 import { useFileStore } from '../stores/file'
-import { useLanguageStore } from '../stores/language'
-import { useBaseStore } from '../stores/base'
-
 import { Notify } from 'quasar'
 import draggable from 'vuedraggable'
 import { debounce } from 'lodash'
-import { languageOptions } from '../constants/language'
-import { useTopicStore } from '../stores/topic'
+
 export default defineComponent({
   name: 'DialogTable',
   components: {
@@ -403,11 +399,9 @@ export default defineComponent({
 
   setup() {
     // Initialize stores
-    const topicStore = useTopicStore()
     const dialogStore = useDialogStore()
     const fileStore = useFileStore()
-    const languageStore = useLanguageStore()
-    const baseStore = useBaseStore()
+
     // Basic state variables
     const drag = ref(false)
     const sortOrder = ref('desc')
@@ -428,13 +422,19 @@ export default defineComponent({
     const selectedLevel = ref(null)
     const selectedCharacter = ref(null)
     const selectedCharacter2 = ref(null)
-    const selectedSentenceCount = ref(6)
-    const selectedSourceLanguage = computed(() => languageStore.sourceLanguage)
+    const selectedSentenceCount = ref(null)
 
     // Prompt and settings
     const prompt = ref('')
-    const defaultPrompt = ref(dialogStore.generatePrompt())
-    const settings = ref(dialogStore.settings)
+    const defaultPrompt = ref('Please write a dialogue about the topic {topicname} in lesson {lesson}. The dialogue should be at {level} level, between {character1} and {character2}. Include {sentenceCount} sentences with the following patterns:')
+    const settings = ref({
+      modelAI: 'gpt4',
+      level: 'beginner',
+      sentenceCount: 6,
+      modelAI: 'gpt4',
+      character1: 'john',
+      character2: 'mary'
+    })
 
     // Preview dialog
     const previewDialog = ref([])
@@ -444,33 +444,98 @@ export default defineComponent({
     const rawJson = ref('')
 
     // Mock data for selects
-    const topicOptions = computed(() => topicStore.topics.map(topic => ({
-      label: topic.name,
-      value: topic.id
-    })))
+    const topicOptions = [
+      { label: 'Topic 1', value: 1 },
+      { label: 'Topic 2', value: 2 },
+      { label: 'Topic 3', value: 3 }
+    ]
 
-    const lessonOptions = computed(() => {
-      if (!selectedTopic.value) return []
-      const lessons = topicStore.lessons[selectedTopic.value] || []
-      return lessons.map(lesson => ({
-        label: lesson.name,
-        value: lesson.id
-      }))
-    })
+    const lessonOptions = [
+      { label: 'Lesson 1', value: 1 },
+      { label: 'Lesson 2', value: 2 },
+      { label: 'Lesson 3', value: 3 }
+    ]
 
-    const levelOptions = baseStore.getLanguageLevels.map(level => ({
-      label: level.name,
-      value: level.code
-    }))
-    const characterOptions = baseStore.getCharacters.map(character => ({
-      label: character.name,
-      value: character.id,
-      voice_code: character.voice_code,
-      name: character.name
-    }))
+    const modelAIOptions = [
+      { label: 'GPT-4', value: 'gpt4' },
+      { label: 'GPT-3.5', value: 'gpt35' },
+      { label: 'Claude', value: 'claude' }
+    ]
 
-    const modelAIOptions = dialogStore.modelAIOptions
-    const statusOptions = dialogStore.statusOptions
+    const levelOptions = [
+      { label: 'Beginner', value: 'beginner' },
+      { label: 'Intermediate', value: 'intermediate' },
+      { label: 'Advanced', value: 'advanced' }
+    ]
+
+    const characterOptions = [
+      { label: 'John', value: 'john', voice_code: 'en-US-John' },
+      { label: 'Mary', value: 'mary', voice_code: 'en-US-Mary' },
+      { label: 'David', value: 'david', voice_code: 'en-US-David' },
+      { label: 'Sarah', value: 'sarah', voice_code: 'en-US-Sarah' },
+      { label: 'Michael', value: 'michael', voice_code: 'en-US-Michael' }
+    ]
+
+    // Status options
+    const statusOptions = [
+      { label: 'Draft', value: 'draft' },
+      { label: 'Approved', value: 'approved' }
+    ]
+
+    // Mock data for dialogues
+    const dialogues = ref([
+      {
+        id: 1,
+        prompt: 'Create a dialogue about ordering food at a restaurant',
+        sentenceCount: 10,
+        modelAI: 'gpt4',
+        character1: 'john',
+        character2: 'mary',
+        status: 'draft',
+        audio: 'https://example.com/audio1.mp3',
+        dialogResult: [
+          { speaker: 'John', text: 'Hello, I would like to order some food.' },
+          { speaker: 'Mary', text: 'Of course, what would you like to have?' },
+          { speaker: 'John', text: 'I would like to order a pizza.' },
+          { speaker: 'Mary', text: 'Of course, what would you like to have?' }
+        ],
+        word: [
+          'order',
+          'pizza',
+          'restaurant',
+          'a',
+          'the',
+          'and',
+          'what'
+        ]
+      },
+      {
+        id: 2,
+        prompt: 'Create a dialogue about ordering food at a restaurant',
+        sentenceCount: 10,
+        modelAI: 'gpt4',
+        character1: 'john',
+        character2: 'mary',
+        status: 'approved',
+        audio: 'https://example.com/audio2.mp3',
+        dialogResult: [
+          { speaker: 'John', text: 'Hello, I would like to order some food.' },
+          { speaker: 'Mary', text: 'Of course, what would you like to have?' },
+          { speaker: 'John', text: 'I would like to order a pizza.' },
+          { speaker: 'Mary', text: 'Of course, what would you like to have?' }
+        ],
+        word: [
+          'order',
+          'pizza',
+          'restaurant',
+          'a',
+          'the',
+          'and',
+          'or',
+          'but'
+        ]
+      }
+    ])
 
     // Column visibility
     const visibleColumns = ref({
@@ -478,136 +543,70 @@ export default defineComponent({
       word: true,
       status: true,
       audio: true,
-      image: true,
       actions: true
     })
 
     // Computed properties
     const filteredDialogues = computed({
-      get: () => dialogStore.dialogues,
+      get: () => dialogues.value,
       set: (value) => {
-        dialogStore.updateDialogues(value)
+        dialogues.value = value
       }
     })
 
-    // Add new function for generating prompt
-    const generatePrompt = () => {
-      if (!selectedTopic.value || !selectedLesson.value) return defaultPrompt.value
-
-      const selectedTopicObj = topicOptions.value.find(t => t.value === selectedTopic.value)
-      const lesson = lessonOptions.value.find(l => l.value === selectedLesson.value)
-
-      // Debug logging
-      console.log('Selected Character 1:', selectedCharacter.value)
-      console.log('Character Options:', characterOptions)
-      console.log('Found Character 1:', characterOptions.find(c => c.value === selectedCharacter.value))
-
-      const character1 = characterOptions.find(c => c.value === selectedCharacter.value)
-      const character2 = characterOptions.find(c => c.value === selectedCharacter2.value)
-      const sourceLanguage = languageOptions.find(l => l.value === selectedSourceLanguage.value)
-
-      // Get the actual selected character names from the selected values
-      const character1Name = selectedCharacter.value ? character1?.name || '' : ''
-      const character2Name = selectedCharacter2.value ? character2?.name || '' : ''
-
-      // Debug logging
-      console.log('Character 1 Name:', character1Name)
-      console.log('Character 2 Name:', character2Name)
-
-      return dialogStore.generatePrompt({
-        topic: selectedTopicObj?.label || '',
-        lesson: lesson?.label || '',
-        level: selectedLevel.value || '',
-        character1: character1Name,
-        character2: character2Name,
-        sentenceCount: selectedSentenceCount.value || '',
-        sourceLanguage: sourceLanguage?.label || ''
-      })
-    }
-
-    // Watch for changes in all relevant parameters
-    watch(
-      [
-        selectedTopic,
-        selectedLesson,
-        selectedLevel,
-        selectedCharacter,
-        selectedCharacter2,
-        selectedSentenceCount,
-        selectedSourceLanguage
-      ],
-      () => {
-        prompt.value = generatePrompt()
-      },
-      { immediate: true }
-    )
-
-    // Watch for topic changes to load lessons
-    watch(selectedTopic, async (newTopicId) => {
-      if (newTopicId) {
-        await topicStore.fetchLessons(newTopicId)
+    // Watch for changes in topic and lesson
+    watch([selectedTopic, selectedLesson], ([newTopic, newLesson]) => {
+      if (newTopic && newLesson) {
+        const topic = topicOptions.find(t => t.value === newTopic)
+        const lesson = lessonOptions.find(l => l.value === newLesson)
+        prompt.value = defaultPrompt.value
+          .replace('{topicname}', topic.label)
+          .replace('{lesson}', lesson.label)
+          .replace('{level}', selectedLevel.value)
+          .replace('{character1}', selectedCharacter.value)
+          .replace('{character2}', selectedCharacter2.value)
+          .replace('{sentenceCount}', selectedSentenceCount.value)
       }
-    }, { immediate: true })
+    })
+
+    // Add watch for rawJson changes
+    watch(rawJson, (newValue) => {
+      try {
+        const parsed = JSON.parse(newValue)
+        prettyJson.value = JSON.stringify(parsed, null, 2)
+      } catch (e) {
+        prettyJson.value = 'Invalid JSON'
+      }
+    })
 
     // Functions
-    const submitDialogue = async () => {
-      try {
-        if (!rawJson.value) {
-          Notify.create({
-            message: 'Please enter JSON input',
-            color: 'negative'
+    const generateDialogue = () => {
+      isGenerating.value = true
+      console.log('Generate dialogue:', {
+        prompt: prompt.value,
+        settings: settings.value
+      })
+      // Mock API call
+      setTimeout(() => {
+        isGenerating.value = false
+        // Generate preview dialog with alternating characters
+        const character1 = characterOptions.find(c => c.value === settings.value.character1)
+        const character2 = characterOptions.find(c => c.value === settings.value.character2)
+        const previewLines = []
+
+        for (let i = 0; i < settings.value.sentenceCount; i++) {
+          previewLines.push({
+            speaker: i % 2 === 0 ? character1.label : character2.label,
+            text: `This is sample sentence ${i + 1}`
           })
-          return
         }
 
-        const dialogueData = JSON.parse(rawJson.value)
-
-        // Validate required fields
-        if (!dialogueData.dialog || !Array.isArray(dialogueData.dialog)) {
-          throw new Error('Invalid dialogue format')
-        }
-
-        // Get selected character details
-        const character1 = characterOptions.find(c => c.value === selectedCharacter.value)
-        const character2 = characterOptions.find(c => c.value === selectedCharacter2.value)
-
-        // Create the complete dialogue data with image and setting
-        const completeDialogueData = {
-          dialog: dialogueData.dialog,
-          vocabulary: dialogueData.vocabulary || [],
-          image: {
-            id: ["Ivi5COLKkSSI"], // Default image ID
-            start_time: [10], // Default start time
-            url: ["https://example.com/image1.jpg"] // Default image URL
-          },
-          setting: {
-            bitrate: "12k",
-            lang: selectedSourceLanguage.value,
-            lesson_id: selectedLesson.value,
-            level: selectedLevel.value,
-            order: 1, // Default order
-            topic_id: selectedTopic.value,
-            voice_code_1: character1?.voice_code,
-            voice_code_2: character2?.voice_code
-          }
-        }
-
-        // Add to dialogues list using store
-        await dialogStore.addDialogue(completeDialogueData)
-
-        // Clear input
-        rawJson.value = ''
-
+        previewDialog.value = previewLines
         Notify.create({
-          message: 'Dialogue created successfully',
+          message: 'Dialogue generated successfully',
           color: 'positive'
         })
-      } catch (error) {
-        Notify.create({
-          message: error.message || 'Failed to create dialogue',
-          color: 'negative'
-        })
-      }
+      }, 2000)
     }
 
     const toggleSortOrder = () => {
@@ -644,7 +643,7 @@ export default defineComponent({
 
     const toggleSelectAll = (value) => {
       if (value) {
-        selectedDialogues.value = [...dialogStore.dialogues]
+        selectedDialogues.value = [...dialogues.value]
       } else {
         selectedDialogues.value = []
       }
@@ -662,6 +661,10 @@ export default defineComponent({
       if (selectedDialogues.value.length === 0) return false
       return confirmDialogueName.value === selectedDialogues.value[0].name
     })
+
+    const submitDialogue = () => {
+      console.log('Submit dialogue')
+    }
 
     // Status handling
     const getStatusColor = (status) => {
@@ -691,6 +694,11 @@ export default defineComponent({
       // Implement audio playback logic
     }
 
+    const uploadAudio = (element) => {
+      console.log('Uploading audio for element:', element.id)
+      // Implement audio upload logic
+    }
+
     // Add new function for copying prompt
     const copyPrompt = () => {
       navigator.clipboard.writeText(prompt.value)
@@ -702,6 +710,7 @@ export default defineComponent({
 
     return {
       // State variables
+      dialogues,
       filteredDialogues,
       drag,
       visibleColumns,
@@ -743,7 +752,7 @@ export default defineComponent({
       rawJson,
 
       // Functions
-      submitDialogue,
+      generateDialogue,
       toggleSortOrder,
       handleSearch,
       loadDialogues,
@@ -755,6 +764,7 @@ export default defineComponent({
       toggleSelectAll,
       cancelDelete,
       confirmDelete,
+      submitDialogue,
 
       // Status handling
       getStatusColor,
@@ -762,6 +772,7 @@ export default defineComponent({
 
       // Audio handling
       playAudio,
+      uploadAudio,
 
       // New function for copying prompt
       copyPrompt

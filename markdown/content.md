@@ -46,7 +46,7 @@
 
 ---
 
-## 💼 **GIAI ĐOẠN 3: TIẾNG VIỆT GIAO TIẾP CÔNG VIỆC & XÃ HỘI**  
+## 💼 **GIAI ĐOẠN 3: TIẾNG VIỆT GIAO TIẾP CÔNG VIỆC & XÃ HỘI**
 > 📌 Mục tiêu: Hỗ trợ người học sử dụng tiếng Việt trong môi trường làm việc, giao tiếp xã hội chuyên nghiệp, hợp tác và phát triển quan hệ cá nhân.
 
 | # | Topic | Lesson |

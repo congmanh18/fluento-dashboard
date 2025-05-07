@@ -10,7 +10,7 @@
 
 <script>
 import { defineComponent, ref } from 'vue'
-import { useTopicStore } from '../../stores/topicStore'
+import { useTopicStore } from '../../stores/topic'
 import Dialogs from '../../components/Dialogs.vue'
 
 export default defineComponent({

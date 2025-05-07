@@ -87,9 +87,9 @@ export default defineComponent({
         "series": [{
             "type": "bar",
             "barGap": "-100%",
-            "itemStyle": {"normal": {"color": "rgba(0,0,0,0.1)"}},
+            "itemStyle": {"color": "rgba(0,0,0,0.1)"},
             "barWidth": "50%"
-        }, {"barWidth": "50%", "type": "bar", "itemStyle": {"normal": {"color": "#ffffff"}}}],
+        }, {"barWidth": "50%", "type": "bar", "itemStyle": {"color": "#ffffff"}}],
         "dataset": {
             "source": [{"label": "0D", "max": 500, "sales": 220}, {
                 "label": "1D",

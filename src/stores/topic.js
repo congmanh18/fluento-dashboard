@@ -37,13 +37,19 @@ export const useTopicStore = defineStore('topics', {
     // Lấy danh sách topic
     async fetchTopics(params = {}) {
       try {
-        const { limit = 20, page = 1, sort = 'asc', search = '' } = params;
+        const languageStore = useLanguageStore();
+        const { limit = 20, page = 1, sort = 'asc', search = '', lang = languageStore.sourceLanguage } = params;
         const response = await contentApi.getTopics({
           limit,
           page,
           sort,
-          search
+          search,
+          lang
         });
+
+        if (!response.detail) {
+          throw new Error('Invalid response format from server');
+        }
 
         this.topics = response.detail.rows;
         this.pagination = {
@@ -55,6 +61,16 @@ export const useTopicStore = defineStore('topics', {
         };
         return response;
       } catch (error) {
+        console.error('Error fetching topics:', error);
+        const errorMessage = error.response?.data?.message ||
+                           error.response?.data?.error ||
+                           error.message ||
+                           'Failed to fetch topics';
+        Notify.create({
+          type: 'negative',
+          message: errorMessage,
+          caption: `Status: ${error.response?.status || 'Unknown'}`
+        });
         throw error;
       }
     },
@@ -332,4 +348,22 @@ export const useTopicStore = defineStore('topics', {
       }
     },
   },
+
+  watch: {
+    'useLanguageStore().sourceLanguage': {
+      handler(newLang) {
+        if (newLang) {
+          this.pagination.page = 1;
+          this.fetchTopics({
+            limit: this.pagination.limit,
+            page: 1,
+            sort: this.pagination.sort,
+            lang: newLang
+          });
+        }
+      },
+      immediate: true,
+      deep: true
+    }
+  }
 });

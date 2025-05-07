@@ -38,6 +38,16 @@ import {defineComponent} from 'vue'
 
 export default defineComponent({
   name: 'CardTimeLine',
+  props: {
+    layout: {
+      type: String,
+      default: 'dense'
+    },
+    side: {
+      type: String,
+      default: 'right'
+    }
+  },
   setup() {
     return {
       timeline_list: [

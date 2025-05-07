@@ -25,11 +25,18 @@ const routes = [
 
       { path: 'content/topics', component: () => import('src/pages/content/TopicsManagement.vue') },
       { path: 'content/topics2', component: () => import('src/pages/content/TopicsManagement2.vue') },
-
-      { path: 'content/lessons', component: () => import('pages/content/LessonsPage.vue') },
       { path: 'content/dialogs', component: () => import('pages/content/DialogsPage.vue') },
       { path: 'content/stories', component: () => import('pages/content/StoriesPage.vue') },
       { path: 'content/vocabulary', component: () => import('pages/content/VocabulariesPage.vue') },
+
+      { path: 'images', component: () => import('pages/ImagePage.vue') },
+
+      // { path: 'content/lessons', component: () => import('pages/content/LessonsPage.vue') },
+      // { path: 'content/karaoke', component: () => import('pages/content/KaraokePage.vue') },
+      // { path: 'content/quiz', component: () => import('pages/content/QuizPage.vue') },
+
+      { path: 'translate/topics', component: () => import('pages/translate/TopicsManagement.vue') },
+      { path: 'translate/lessons', component: () => import('pages/translate/LessonsManagement.vue') },
 
       { path: 'templates/template1', component: () => import('pages/template/Template1.vue') },
       { path: 'templates/template2', component: () => import('pages/template/Template2.vue') },

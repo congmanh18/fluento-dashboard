@@ -1,13 +1,96 @@
 <template>
-  <q-page class="flex flex-center">
-    <img
-      alt="Quasar logo"
-      src="~assets/quasar-logo-vertical.svg"
-      style="width: 200px; height: 200px"
-    />
-  </q-page>
+  <div class="q-pa-md">
+      <div class="col-12 col-md-6">
+        <q-card class="my-card">
+            <stories />
+        </q-card>
+      </div>
+  </div>
 </template>
 
-<script setup>
-//
+<script>
+import { defineComponent, ref } from 'vue'
+import { useTopicStore } from '../../stores/topic'
+import Stories from '../../components/Stories.vue'
+
+export default defineComponent({
+  name: 'Stories Page',
+
+  components: {
+    Stories
+  },
+
+  setup() {
+    const topicStore = useTopicStore()
+    const topicName = ref('')
+    const topicStatus = ref('draft')
+
+    const statusOptions = [
+      { label: 'Draft', value: 'draft' },
+      { label: 'Pending', value: 'pending' },
+      { label: 'Approved', value: 'approved' }
+    ]
+
+    const onSubmit = () => {
+      if (topicStore.isCreatingNew) {
+        topicStore.saveTopic()
+      } else if (topicStore.isEditing) {
+        topicStore.saveEdit()
+      }
+      resetForm()
+    }
+
+    const onCancel = () => {
+      if (topicStore.isCreatingNew) {
+        topicStore.cancelCreate()
+      } else if (topicStore.isEditing) {
+        topicStore.cancelEdit()
+      }
+      resetForm()
+    }
+
+    const resetForm = () => {
+      topicName.value = ''
+      topicStatus.value = 'draft'
+    }
+
+    return {
+      topicName,
+      topicStatus,
+      statusOptions,
+      onSubmit,
+      onCancel
+    }
+  }
+})
 </script>
+
+<style scoped>
+.q-pa-md {
+  height: calc(105vh - 100px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.row.q-mb-md, .topic-header, .row.items-center.q-pa-sm {
+  flex: 0 0 auto;
+}
+
+.topic-list {
+  flex: 1 1 auto;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 200px);
+}
+
+.topic-items {
+  overflow-y: auto;
+  flex: 1 1 auto;
+}
+
+.my-card {
+  height: 100%;
+}
+</style>

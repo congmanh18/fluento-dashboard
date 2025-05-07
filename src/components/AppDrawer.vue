@@ -24,8 +24,19 @@
           <SidebarItem to="/content/vocabulary" icon="spellcheck" label="Vocabulary" />
           <SidebarItem to="/content/karaoke" icon="music_note" label="Karaoke" />
           <SidebarItem to="/content/quiz" icon="quiz" label="Quiz" />
-          <SidebarItem to="/content/translation" icon="translate" label="Translation" />
-        </SidebarGroup>
+      </SidebarGroup>
+      <SidebarGroup icon="translate" label="Content Translation">
+          <SidebarItem to="/translate/topics" icon="topic" label="Topics" />
+          <SidebarItem to="/translate/lessons" icon="book" label="Lessons" />
+          <SidebarItem to="/translate/dialogs" icon="chat" label="Dialogs" />
+          <SidebarItem to="/translate/stories" icon="book" label="Stories" />
+          <SidebarItem to="/translate/vocabulary" icon="spellcheck" label="Vocabulary" />
+          <SidebarItem to="/translate/karaoke" icon="music_note" label="Karaoke" />
+          <SidebarItem to="/translate/quiz" icon="quiz" label="Quiz" />
+      </SidebarGroup>
+      <SidebarGroup icon="image" label="Image Management">
+        <SidebarItem to="/images" icon="image" label="Images" />
+      </SidebarGroup>
 
       <!-- <SidebarGroup icon="view_in_ar" label="Templates">
           <SidebarItem to="/templates/template1" icon="view_in_ar" label="Template 1" />

@@ -409,7 +409,7 @@
 
 <script>
 import { defineComponent, computed, ref } from 'vue'
-import { useTopicStore } from '../stores/topicStore'
+import { useTopicStore } from '../stores/topic'
 import draggable from 'vuedraggable'
 
 export default defineComponent({

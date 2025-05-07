@@ -394,7 +394,7 @@
                             </template>
                             <template v-else>
                               <img
-                                :src="lesson.image_url"
+                                :src="lesson.imageURL"
                                 alt="lesson image"
                                 style="width: 50px; height: 50px; object-fit: cover;"
                                 class="rounded-borders"
@@ -563,11 +563,9 @@
 </template>
 
 <script>
-import { defineComponent, computed, ref, watch } from 'vue'
-import { useTopicStore } from '../stores/topic'
-import { useFileStore } from '../stores/file'
-import { useLanguageStore } from '../stores/language'
-import { useBaseStore } from '../stores/base'
+import { defineComponent, computed, ref } from 'vue'
+import { useTopicStore } from '../../stores/topic'
+import { useFileStore } from '../../stores/file'
 import { Notify } from 'quasar'
 import draggable from 'vuedraggable'
 import { debounce } from 'lodash'
@@ -581,8 +579,6 @@ export default defineComponent({
   setup() {
     const topicStore = useTopicStore()
     const fileStore = useFileStore()
-    const baseStore = useBaseStore()
-    const languageStore = useLanguageStore()
     const deleteType = ref('topic')
 
     const filter = ref('')
@@ -799,7 +795,7 @@ export default defineComponent({
     const startEditLesson = (topic, lesson) => {
       editingLesson.value = lesson
       editingLessonName.value = lesson.name
-      editingLessonImageURL.value = lesson.image_url
+      editingLessonImageURL.value = lesson.imageURL
     }
 
     // Lưu bài học
@@ -940,26 +936,8 @@ export default defineComponent({
       const file = event.target.files[0]
       if (!file) return
 
-      // Kiểm tra kích thước file (ví dụ: max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        Notify.create({
-          type: 'negative',
-          message: 'File size should not exceed 5MB'
-        })
-        return
-      }
-
-      // Kiểm tra định dạng file
-      if (!file.type.startsWith('image/')) {
-        Notify.create({
-          type: 'negative',
-          message: 'Please upload an image file'
-        })
-        return
-      }
-
       try {
-        const imageUrl = await baseStore.uploadImage(file)
+        const imageUrl = await fileStore.uploadFile(file)
         if (isEditing) {
           editingLessonImageURL.value = imageUrl
         } else {
@@ -967,10 +945,6 @@ export default defineComponent({
         }
       } catch (error) {
         console.error('Upload failed:', error)
-        Notify.create({
-          type: 'negative',
-          message: 'Failed to upload image'
-        })
       }
     }
 
@@ -1108,13 +1082,6 @@ export default defineComponent({
         deleteDialog.value = true
       }
     }
-
-    // Watch for language changes
-    watch(() => languageStore.sourceLanguage, (newLang) => {
-      if (newLang) {
-        loadTopics()
-      }
-    })
 
     return {
       topics,

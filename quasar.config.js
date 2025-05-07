@@ -8,6 +8,8 @@ module.exports = configure(function (/* ctx */) {
     boot: [
       'i18n',
       'axios',
+      'base-data',
+      'topic-data',
     ],
 
     css: ['app.css'],
