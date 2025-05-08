@@ -195,6 +195,42 @@
 
     <!-- Dialog list -->
     <div class="dialogue-list q-mt-md">
+      <!-- Add new section for submitted dialog -->
+      <div v-if="previewDialog.length > 0" class="q-mb-md">
+        <q-card flat bordered>
+          <q-card-section>
+            <div class="text-h6">Submitted Dialog Preview</div>
+            <div class="row q-col-gutter-md">
+              <!-- Dialog Preview -->
+              <div class="col-8">
+                <div class="text-subtitle2 q-mb-sm">Dialog:</div>
+                <div class="dialog-preview">
+                  <div v-for="(line, index) in previewDialog[0].dialog" :key="index" class="q-pa-sm">
+                    <span class="text-weight-bold">{{ line.speaker }}:</span> {{ line.text }}
+                  </div>
+                </div>
+              </div>
+              <!-- Vocabulary Preview -->
+              <div class="col-4">
+                <div class="text-subtitle2 q-mb-sm">Vocabulary:</div>
+                <div class="vocabulary-preview">
+                  <q-chip
+                    v-for="(word, index) in previewDialog[0].vocabulary"
+                    :key="index"
+                    color="primary"
+                    text-color="white"
+                    dense
+                    class="q-ma-xs"
+                  >
+                    {{ word }}
+                  </q-chip>
+                </div>
+              </div>
+            </div>
+          </q-card-section>
+        </q-card>
+      </div>
+
       <div class="dialogue-header row items-center q-pa-sm bg-grey-2">
         <div class="col-1 text-center">
           <div class="row q-gutter-sm">
@@ -428,7 +464,7 @@ export default defineComponent({
     const selectedLevel = ref(null)
     const selectedCharacter = ref(null)
     const selectedCharacter2 = ref(null)
-    const selectedSentenceCount = ref(6)
+    const selectedSentenceCount = ref(8)
     const selectedSourceLanguage = computed(() => languageStore.sourceLanguage)
 
     // Prompt and settings
@@ -592,11 +628,14 @@ export default defineComponent({
           }
         }
 
-        // Add to dialogues list using store
-        await dialogStore.addDialogue(completeDialogueData)
+        // Submit to API using store
+        const response = await dialogStore.addDialogue(completeDialogueData)
 
-        // Clear input
+        // Only clear the JSON input
         rawJson.value = ''
+
+        // Refresh dialogues list
+        await dialogStore.fetchDialogues()
 
         Notify.create({
           message: 'Dialogue created successfully',
@@ -1030,5 +1069,40 @@ export default defineComponent({
   height: 100%;
   gap: 12px;
   padding: 4px 0;
+}
+
+/* Dialog Preview */
+.dialog-preview {
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  border: 1px solid #e0e0e0;
+  padding: 8px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.dialog-preview > div {
+  padding: 4px 8px;
+  border-bottom: 1px solid #e0e0e0;
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.4;
+}
+
+.dialog-preview > div:last-child {
+  border-bottom: none;
+}
+
+/* Vocabulary Preview */
+.vocabulary-preview {
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  border: 1px solid #e0e0e0;
+  padding: 8px;
+  max-height: 300px;
+  overflow-y: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
 }
 </style>

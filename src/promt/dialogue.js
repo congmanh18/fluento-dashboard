@@ -1,13 +1,28 @@
-export function generateDialoguePrompt({ sourceLanguage, character1, character2, topic, lesson, level, sentenceCount }) {
+export function generateDialoguePrompt({
+  sourceLanguage,
+  character1,
+  character2,
+  topic,
+  lesson,
+  level,
+  sentenceCount
+}) {
   return `
-You are a content assistant creating ${sourceLanguage} learning material for foreign learners.
-Please create a short dialogue between two characters named ${character1} and ${character2}.
+You are a content assistant creating ${sourceLanguage} learning material for international learners.
+
+Please write a short, natural-sounding conversation between two characters named ${character1} and ${character2}.
 Topic: ${topic}.
 Lesson: ${lesson} under the topic ${topic}.
-Level: ${level} (beginner in ${sourceLanguage}).
-The dialogue should contain about ${sentenceCount} sentences.
+Level: ${level} (beginner level in ${sourceLanguage}).
+The dialogue should contain around ${sentenceCount} sentences.
 
-The output must be in JSON format with the following structure:
+Focus on making the dialogue feel human and culturally authentic — not robotic or overly textbook-like. Include elements of natural daily conversation such as greetings, small talk, or cultural norms (e.g., how people greet or address each other in ${sourceLanguage}).
+
+The language must be simple and appropriate for ${level} learners, using basic structures and beginner-level vocabulary. Prefer real-life situations or everyday settings.
+
+You should also provide a list of key vocabulary that is thematically relevant to the topic and useful for learners at this level. Do not hard-limit the number of vocabulary words, but select only those that are clearly appropriate and helpful.
+
+Output only a valid JSON object in the following format:
 
 {
   "dialog": [
@@ -21,12 +36,6 @@ The output must be in JSON format with the following structure:
   ]
 }
 
-Detailed requirements:
-- Use simple language with basic vocabulary and sentence structures.
-- The dialogue should contain around ${sentenceCount} sentences.
-- The conversation should be in ${sourceLanguage}.
-- Vocabulary should include words that are relatively new for learners at the ${level} level.
-- Include a maximum of 5 vocabulary words, related to the topic ${topic}.
-- Only output valid JSON as specified above. No extra explanations or comments.
+Do not include any explanation or additional text. Only output the JSON.
   `.trim();
 }

@@ -123,7 +123,7 @@ export const useDialogStore = defineStore('dialogs', {
     },
 
     // Fetch dialogues
-    async fetchDialogue(params = {}) {
+    async fetchDialogues(params = {}) {
       try {
         const { limit = 20, page = 1, sort = 'asc', search = '' } = params;
         const response = await contentApi.getDialogues({

@@ -38,7 +38,7 @@ export const useTopicStore = defineStore('topics', {
     async fetchTopics(params = {}) {
       try {
         const languageStore = useLanguageStore();
-        const { limit = 20, page = 1, sort = 'asc', search = '', lang = languageStore.sourceLanguage } = params;
+        const { limit = 100, page = 1, sort = 'asc', search = '', lang = languageStore.sourceLanguage } = params;
         const response = await contentApi.getTopics({
           limit,
           page,

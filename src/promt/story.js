@@ -1,13 +1,27 @@
-export function generateStoryPrompt({ sourceLanguage, character, topic, lesson, level, sentenceCount }) {
+export function generateStoryPrompt({
+  sourceLanguage,
+  character,
+  topic,
+  lesson,
+  level,
+  sentenceCount
+}) {
   return `
-You are a content assistant creating ${sourceLanguage} learning material for foreign learners.
-Please write a short story with a main character named ${character}.
+You are a content assistant creating ${sourceLanguage} learning material for international learners.
+
+Please write a short, culturally relevant story with a main character named ${character}.
 Topic: ${topic}.
 Lesson: ${lesson} under the topic ${topic}.
-Level: ${level} (beginner in ${sourceLanguage}).
+Level: ${level} (beginner level in ${sourceLanguage}).
 The story should be about ${sentenceCount} sentences long.
 
-The output must be in JSON format with the following structure:
+The story must be written in simple, beginner-friendly ${sourceLanguage}. Use language structures and vocabulary appropriate for ${level} learners. The story should reflect real-life situations that are common in daily life or culturally meaningful in ${sourceLanguage}-speaking communities.
+
+Avoid robotic or textbook-like phrasing. Make the story feel human and natural, even with limited vocabulary. You may include natural expressions or cultural references if suitable.
+
+Please also include a list of vocabulary words that are important to understanding the story and related to the topic. Do not hard-limit the number of vocabulary words — instead, select only those that are most useful and appropriate for learners at this level.
+
+Output only a valid JSON object in the following format:
 
 {
   "story": {
@@ -21,12 +35,6 @@ The output must be in JSON format with the following structure:
   ]
 }
 
-Detailed requirements:
-- Use simple sourceLanguage with vocabulary and sentence structures appropriate for the ${level} level.
-- The content should be relatable to daily life and aligned with the topic ${topic}.
-- The story must be written in ${sourceLanguage}.
-- Vocabulary should include words that are relatively new for learners at the ${level} level.
-- Include a maximum of 5 vocabulary words, related to the topic ${topic}.
-- Do not include any explanations — only output valid JSON in the format above.
+Do not include any explanations — only output valid JSON in the format above.
   `.trim();
 }
