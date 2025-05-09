@@ -1,6 +1,6 @@
 export function generateStoryPrompt({
   sourceLanguage,
-  character,
+  character1,
   topic,
   lesson,
   level,
@@ -9,17 +9,19 @@ export function generateStoryPrompt({
   return `
 You are a content assistant creating ${sourceLanguage} learning material for international learners.
 
-Please write a short, culturally relevant story with a main character named ${character}.
+Please write a short, culturally relevant **narrative story** (not a dialogue) with a main character named ${character1}.
 Topic: ${topic}.
 Lesson: ${lesson} under the topic ${topic}.
 Level: ${level} (beginner level in ${sourceLanguage}).
 The story should be about ${sentenceCount} sentences long.
 
-The story must be written in simple, beginner-friendly ${sourceLanguage}. Use language structures and vocabulary appropriate for ${level} learners. The story should reflect real-life situations that are common in daily life or culturally meaningful in ${sourceLanguage}-speaking communities.
+The story must be written in simple, beginner-friendly ${sourceLanguage}. Use sentence structures and vocabulary that are appropriate for ${level} learners.
 
-Avoid robotic or textbook-like phrasing. Make the story feel human and natural, even with limited vocabulary. You may include natural expressions or cultural references if suitable.
+The story should reflect everyday life or culturally meaningful situations in ${sourceLanguage}-speaking communities. It must be a **narrative**, with a clear beginning, middle, and end — not just a conversation. You may include natural expressions or cultural references where suitable.
 
-Please also include a list of vocabulary words that are important to understanding the story and related to the topic. Do not hard-limit the number of vocabulary words — instead, select only those that are most useful and appropriate for learners at this level.
+Avoid robotic or textbook-style phrasing. Make the story feel human and relatable, even with limited vocabulary.
+
+Please also include a list of vocabulary words that are important for understanding the story and relevant to the topic. Choose words that are useful and level-appropriate — no need to hard-limit the number of vocabulary items.
 
 Output only a valid JSON object in the following format:
 

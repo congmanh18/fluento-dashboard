@@ -134,14 +134,15 @@ export const useDialogStore = defineStore('dialogs', {
           return;
         }
 
-        const { limit = 20, page = 1, sort = 'asc', search = '' } = params;
+        const { limit = 20, page = 1, sort = 'asc', search = '', type_task = 'dialog' } = params;
         console.log('Fetching dialogues with params:', { lessonId, limit, page, sort, search });
 
         const response = await contentApi.getDialogues(lessonId, {
           limit,
           page,
           sort,
-          search
+          search,
+          type_task
         });
 
         console.log('Raw Fetch Dialogues Response:', response);
