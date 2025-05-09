@@ -6,15 +6,7 @@
       </div>
       <div class="col-4">
       </div>
-      <div class="col-2 q-px-sm">
-        <q-btn
-          color="primary"
-          label="Delete Dialogue"
-          class="full-width"
-          @click="showDeleteWarning"
-        />
-      </div>
-      <div class="col-2">
+      <div class="col-4">
         <q-btn-dropdown
           flat
           dense
@@ -32,14 +24,6 @@
             </q-item>
             <q-item tag="label" v-ripple>
               <q-item-section>
-                <q-item-label>Status</q-item-label>
-              </q-item-section>
-              <q-item-section avatar>
-                <q-checkbox v-model="visibleColumns.status" />
-              </q-item-section>
-            </q-item>
-            <q-item tag="label" v-ripple>
-              <q-item-section>
                 <q-item-label>Audio</q-item-label>
               </q-item-section>
               <q-item-section avatar>
@@ -48,18 +32,10 @@
             </q-item>
             <q-item tag="label" v-ripple>
               <q-item-section>
-                <q-item-label>Vocabulary</q-item-label>
+                <q-item-label>Image</q-item-label>
               </q-item-section>
               <q-item-section avatar>
-                <q-checkbox v-model="visibleColumns.word" />
-              </q-item-section>
-            </q-item>
-            <q-item tag="label" v-ripple>
-              <q-item-section>
-                <q-item-label>Actions</q-item-label>
-              </q-item-section>
-              <q-item-section avatar>
-                <q-checkbox v-model="visibleColumns.actions" />
+                <q-checkbox v-model="visibleColumns.image" />
               </q-item-section>
             </q-item>
           </q-list>
@@ -195,6 +171,27 @@
 
     <!-- Dialog list -->
     <div class="dialogue-list q-mt-md">
+      <!-- Vocabulary Section -->
+      <div v-if="filteredDialogues.length > 0 && !filteredDialogues[0].isEmpty" class="q-mb-md">
+        <q-card flat bordered>
+          <q-card-section>
+            <div class="text-h6">vocabulary</div>
+            <div class="vocabulary-section">
+              <q-chip
+                v-for="(word, index) in filteredDialogues[0].vocabulary"
+                :key="index"
+                color="primary"
+                text-color="white"
+                dense
+                class="q-ma-xs"
+              >
+                {{ word }}
+              </q-chip>
+            </div>
+          </q-card-section>
+        </q-card>
+      </div>
+
       <!-- Add new section for submitted dialog -->
       <div v-if="previewDialog.length > 0" class="q-mb-md">
         <q-card flat bordered>
@@ -233,27 +230,11 @@
 
       <div class="dialogue-header row items-center q-pa-sm bg-grey-2">
         <div class="col-1 text-center">
-          <div class="row q-gutter-sm">
-            <q-btn
-              flat
-              dense
-              round
-              :icon="sortOrder === 'desc' ? 'arrow_upward' : 'arrow_downward'"
-              @click="toggleSortOrder"
-              color="primary"
-              size="sm"
-            />
-          </div>
         </div>
 
         <!-- Dialog Result -->
-        <div class="col-3" v-if="visibleColumns.dialogResult">
+        <div class="col-6" v-if="visibleColumns.dialogResult">
           <div class="text-weight-bold">Dialog Result</div>
-        </div>
-
-        <!-- Status -->
-        <div class="col-2 text-center" v-if="visibleColumns.status">
-          <div class="text-weight-bold">Status</div>
         </div>
 
         <!-- Audio -->
@@ -265,61 +246,29 @@
         <div class="col-2 text-center" v-if="visibleColumns.image">
           <div class="text-weight-bold">Image</div>
         </div>
-
-        <!-- Vocabulary -->
-        <div class="col-2 text-center" v-if="visibleColumns.word">
-          <div class="text-weight-bold">Vocabulary</div>
-        </div>
-
-        <!-- Actions -->
-        <div class="col-1 text-center" v-if="visibleColumns.actions">
-          <div class="text-weight-bold">Actions</div>
-        </div>
       </div>
 
-      <draggable
-        v-model="filteredDialogues"
-        group="dialogues"
-        item-key="id"
-        handle=".handle"
-        @start="drag=true"
-        @end="drag=false"
-        class="dialogue-items"
-        :disabled="isDeleteMode"
-      >
-        <template #item="{ element }">
-          <q-card flat bordered class="q-mb-sm" :class="{ 'selected': selectedDialogues.includes(element) }">
+      <div class="dialogue-items">
+        <template v-for="element in filteredDialogues" :key="element.id">
+          <q-card flat bordered class="q-mb-sm">
             <q-card-section class="row items-center">
               <div class="col-1 text-left">
-                <q-icon name="drag_indicator" class="handle cursor-move" style="font-size: 24px;" />
               </div>
 
               <!-- Dialog Result -->
-              <div class="col-3 dialog-cell" v-if="visibleColumns.dialogResult">
-                <div class="dialog-result">
-                  <div v-for="(line, index) in element.dialog" :key="index">
-                    <span class="text-weight-bold">{{ line.speaker }}:</span> {{ line.text }}
-                  </div>
-                </div>
-              </div>
-
-              <!-- Status -->
-              <div class="col-2 text-left" v-if="visibleColumns.status && element">
-                <div class="status-display">
-                  <q-radio
-                    v-model="element.status"
-                    val="draft"
-                    label="Draft"
-                    color="grey"
-                    dense
-                  />
-                  <q-radio
-                    v-model="element.status"
-                    val="approved"
-                    label="Approved"
-                    color="positive"
-                    dense
-                  />
+              <div class="col-6 dialog-cell" v-if="visibleColumns.dialogResult">
+                <div class="dialog-result" :class="{ 'empty-state': element.isEmpty }">
+                  <template v-if="element.isEmpty">
+                    <div class="empty-message">
+                      <q-icon name="info" size="24px" color="grey-7" class="q-mr-sm" />
+                      {{ element.message }}
+                    </div>
+                  </template>
+                  <template v-else>
+                    <div v-for="(line, index) in element.dialog" :key="line.id" class="dialog-line">
+                      <span class="text-weight-bold">{{ line.speaker }}:</span> {{ line.text }}
+                    </div>
+                  </template>
                 </div>
               </div>
 
@@ -343,98 +292,28 @@
                   <q-img :src="element.image" />
                 </div>
               </div>
-
-              <!-- Vocabulary -->
-              <div class="col-2 word-column" v-if="visibleColumns.word && element">
-                <div class="word-list">
-                  <q-chip
-                    v-for="(word, index) in element.word || []"
-                    :key="index"
-                    color="primary"
-                    text-color="white"
-                    dense
-                    class="q-ma-xs"
-                  >
-                    {{ word }}
-                  </q-chip>
-                </div>
-              </div>
-
-              <!-- Actions -->
-              <div class="col-1 text-center" v-if="visibleColumns.actions">
-                <q-btn
-                  flat
-                  dense
-                  round
-                  icon="edit"
-                  @click="startEditDialogue(element)"
-                />
-              </div>
             </q-card-section>
           </q-card>
         </template>
-      </draggable>
-
-      <!-- Delete actions -->
-      <div class="delete-actions row justify-end q-mt-md" v-if="isDeleteMode">
-        <q-btn label="Cancel" color="primary" @click="cancelDeleteMode" class="q-mr-sm" />
-        <q-btn
-          color="primary"
-          label="Delete selected"
-          :disable="selectedDialogues.length === 0"
-          @click="openDeleteConfirmDialog"
-        />
       </div>
     </div>
-
-    <!-- Delete confirmation dialog -->
-    <q-dialog v-model="deleteDialog" persistent>
-      <q-card style="min-width: 350px">
-        <q-card-section class="row items-center">
-          <q-avatar icon="warning" color="negative" text-color="white" />
-          <span class="q-ml-sm">Are you sure you want to delete selected dialogues?</span>
-        </q-card-section>
-
-        <q-card-actions align="right">
-          <q-btn flat label="Cancel" color="primary" v-close-popup />
-          <q-btn flat label="Delete" color="negative" v-close-popup @click="confirmDelete" />
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
-
-    <!-- Delete warning dialog -->
-    <q-dialog v-model="deleteWarningDialog" persistent>
-      <q-card style="min-width: 350px">
-        <q-card-section class="row items-center">
-          <q-avatar icon="warning" color="negative" text-color="white" />
-          <span class="q-ml-sm">This will permanently delete the selected dialogues. Continue?</span>
-        </q-card-section>
-
-        <q-card-actions align="right">
-          <q-btn flat label="Cancel" color="primary" v-close-popup />
-          <q-btn flat label="Continue" color="negative" v-close-popup @click="activateDeleteMode" />
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
   </div>
 </template>
 
 <script>
-import { defineComponent, computed, ref, watch } from 'vue'
+import { defineComponent, computed, ref, watch, onMounted } from 'vue'
 import { useDialogStore } from '../stores/dialogue'
 import { useFileStore } from '../stores/file'
 import { useLanguageStore } from '../stores/language'
 import { useBaseStore } from '../stores/base'
 
 import { Notify } from 'quasar'
-import draggable from 'vuedraggable'
 import { debounce } from 'lodash'
 import { languageOptions } from '../constants/language'
 import { useTopicStore } from '../stores/topic'
 export default defineComponent({
   name: 'DialogTable',
   components: {
-    draggable
   },
 
   setup() {
@@ -444,19 +323,10 @@ export default defineComponent({
     const fileStore = useFileStore()
     const languageStore = useLanguageStore()
     const baseStore = useBaseStore()
+
     // Basic state variables
-    const drag = ref(false)
-    const sortOrder = ref('desc')
-    const isDeleteMode = ref(false)
-    const deleteDialog = ref(false)
-    const deleteWarningDialog = ref(false)
-    const isDeleting = ref(false)
     const isUpdating = ref(false)
     const isGenerating = ref(false)
-    const selectAll = ref(false)
-    const selectedDialogues = ref([])
-    const selectedDialogs = ref([])
-    const confirmDialogueName = ref('')
 
     // Select options
     const selectedTopic = ref(null)
@@ -511,11 +381,8 @@ export default defineComponent({
     // Column visibility
     const visibleColumns = ref({
       dialogResult: true,
-      word: true,
-      status: true,
       audio: true,
-      image: true,
-      actions: true
+      image: true
     })
 
     // Computed properties
@@ -523,6 +390,66 @@ export default defineComponent({
       get: () => dialogStore.dialogues,
       set: (value) => {
         dialogStore.updateDialogues(value)
+      }
+    })
+
+    // Fetch all dialogues on mount
+    onMounted(async () => {
+      try {
+        // Fetch all topics first
+        await topicStore.fetchTopics()
+
+        // If there are topics, fetch lessons for the first topic
+        if (topicStore.topics.length > 0) {
+          const firstTopic = topicStore.topics[0]
+          selectedTopic.value = firstTopic.id
+          await topicStore.fetchLessons(firstTopic.id)
+
+          // If there are lessons, fetch dialogues for the first lesson
+          if (topicStore.lessons[firstTopic.id]?.length > 0) {
+            const firstLesson = topicStore.lessons[firstTopic.id][0]
+            selectedLesson.value = firstLesson.id
+            await dialogStore.fetchDialogues(firstLesson.id)
+          }
+        }
+      } catch (error) {
+        console.error('Failed to initialize data:', error)
+        Notify.create({
+          type: 'negative',
+          message: 'Failed to load initial data'
+        })
+      }
+    })
+
+    // Watch for topic changes to load lessons
+    watch(selectedTopic, async (newTopicId) => {
+      if (newTopicId) {
+        try {
+          await topicStore.fetchLessons(newTopicId)
+          // Reset selected lesson when topic changes
+          selectedLesson.value = null
+        } catch (error) {
+          console.error('Failed to fetch lessons:', error)
+          Notify.create({
+            type: 'negative',
+            message: 'Failed to load lessons'
+          })
+        }
+      }
+    }, { immediate: true })
+
+    // Watch for lesson changes to load dialogues
+    watch(selectedLesson, async (newLessonId) => {
+      if (newLessonId) {
+        try {
+          await dialogStore.fetchDialogues(newLessonId)
+        } catch (error) {
+          console.error('Failed to fetch dialogues:', error)
+          Notify.create({
+            type: 'negative',
+            message: 'Failed to load dialogues'
+          })
+        }
       }
     })
 
@@ -578,13 +505,6 @@ export default defineComponent({
       { immediate: true }
     )
 
-    // Watch for topic changes to load lessons
-    watch(selectedTopic, async (newTopicId) => {
-      if (newTopicId) {
-        await topicStore.fetchLessons(newTopicId)
-      }
-    }, { immediate: true })
-
     // Functions
     const submitDialogue = async () => {
       try {
@@ -635,7 +555,7 @@ export default defineComponent({
         rawJson.value = ''
 
         // Refresh dialogues list
-        await dialogStore.fetchDialogues()
+        await dialogStore.fetchDialogues(selectedLesson.value)
 
         Notify.create({
           message: 'Dialogue created successfully',
@@ -649,72 +569,12 @@ export default defineComponent({
       }
     }
 
-    const toggleSortOrder = () => {
-      sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
-    }
-
     const handleSearch = () => {
       console.log('Handle search')
     }
 
     const loadDialogues = () => {
       console.log('Load dialogues')
-    }
-
-    const handleDragEnd = () => {
-      console.log('Handle drag end')
-    }
-
-    const showDeleteWarning = () => {
-      deleteWarningDialog.value = true
-    }
-
-    const activateDeleteMode = () => {
-      isDeleteMode.value = true
-    }
-
-    const cancelDeleteMode = () => {
-      isDeleteMode.value = false
-    }
-
-    const openDeleteConfirmDialog = () => {
-      deleteDialog.value = true
-    }
-
-    const toggleSelectAll = (value) => {
-      if (value) {
-        selectedDialogues.value = [...dialogStore.dialogues]
-      } else {
-        selectedDialogues.value = []
-      }
-    }
-
-    const cancelDelete = () => {
-      confirmDialogueName.value = ''
-    }
-
-    const confirmDelete = () => {
-      console.log('Confirm delete')
-    }
-
-    const canDelete = computed(() => {
-      if (selectedDialogues.value.length === 0) return false
-      return confirmDialogueName.value === selectedDialogues.value[0].name
-    })
-
-    // Status handling
-    const getStatusColor = (status) => {
-      switch (status) {
-        case 'draft': return 'grey'
-        case 'approved': return 'positive'
-        default: return 'grey'
-      }
-    }
-
-    const getStatusLabel = (status) => {
-      if (!status) return 'Unknown'
-      const option = statusOptions.find(opt => opt.value === status)
-      return option ? option.label : status
     }
 
     // Audio handling
@@ -742,20 +602,9 @@ export default defineComponent({
     return {
       // State variables
       filteredDialogues,
-      drag,
       visibleColumns,
-      sortOrder,
-      isDeleteMode,
-      deleteDialog,
-      deleteWarningDialog,
-      isDeleting,
       isUpdating,
       isGenerating,
-      selectAll,
-      selectedDialogues,
-      selectedDialogs,
-      confirmDialogueName,
-      canDelete,
 
       // Select options
       selectedTopic,
@@ -783,26 +632,9 @@ export default defineComponent({
 
       // Functions
       submitDialogue,
-      toggleSortOrder,
       handleSearch,
       loadDialogues,
-      handleDragEnd,
-      showDeleteWarning,
-      activateDeleteMode,
-      cancelDeleteMode,
-      openDeleteConfirmDialog,
-      toggleSelectAll,
-      cancelDelete,
-      confirmDelete,
-
-      // Status handling
-      getStatusColor,
-      getStatusLabel,
-
-      // Audio handling
       playAudio,
-
-      // New function for copying prompt
       copyPrompt
     }
   }
@@ -900,7 +732,7 @@ export default defineComponent({
 .dialogue-items .q-card-section > div {
   padding: 4px;
   display: flex;
-  align-items: center; /* Thay đổi từ flex-start */
+  align-items: center;
 }
 
 /* Handle */
@@ -926,20 +758,37 @@ export default defineComponent({
   background-color: #f5f5f5;
   border-radius: 4px;
   border: 1px solid #e0e0e0;
-  display: flex;
-  flex-direction: column;
-  padding: 4px 0;
+  padding: 8px;
+  max-height: 200px;
+  overflow-y: auto;
 }
 
-.dialog-result > div {
+.dialog-result.empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100px;
+  background-color: #fafafa;
+}
+
+.empty-message {
+  display: flex;
+  align-items: center;
+  color: #666;
+  font-size: 1.1em;
+  text-align: center;
+  padding: 16px;
+}
+
+.dialog-line {
   padding: 4px 8px;
   border-bottom: 1px solid #e0e0e0;
   white-space: normal;
   word-break: break-word;
-  line-height: 1.2;
+  line-height: 1.4;
 }
 
-.dialog-result > div:last-child {
+.dialog-line:last-child {
   border-bottom: none;
 }
 
@@ -1104,5 +953,28 @@ export default defineComponent({
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
+}
+
+/* Vocabulary Section */
+.vocabulary-section {
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  border: 1px solid #e0e0e0;
+  padding: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.vocabulary-section .q-chip {
+  font-size: 14px;
+  height: 28px;
+}
+
+.vocabulary-section .q-chip:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: all 0.2s ease;
 }
 </style>

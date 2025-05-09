@@ -48,12 +48,16 @@ export const useDialogStore = defineStore('dialogs', {
       try {
         console.log('Sending dialogue data:', dialogueData);
         const response = await contentApi.createDialogue(dialogueData);
-        console.log('Server response:', response);
+        console.log('Create Dialogue Response:', response);
 
         if (response.code === 200) {
-          this.dialogues.unshift(response.detail);
-          this.pagination.total_rows += 1;
-          this.pagination.total_pages = Math.ceil(this.pagination.total_rows / this.pagination.limit);
+          // Add a small delay to allow the server to process the new dialogue
+          await new Promise(resolve => setTimeout(resolve, 1000));
+
+          // Fetch the updated list of dialogues
+          const lessonId = dialogueData.setting.lesson_id;
+          console.log('Fetching dialogues for lesson:', lessonId);
+          await this.fetchDialogues(lessonId);
 
           Notify.create({
             type: 'positive',
@@ -123,26 +127,115 @@ export const useDialogStore = defineStore('dialogs', {
     },
 
     // Fetch dialogues
-    async fetchDialogues(params = {}) {
+    async fetchDialogues(lessonId, params = {}) {
       try {
+        if (!lessonId) {
+          console.log('No lessonId provided, skipping fetch');
+          return;
+        }
+
         const { limit = 20, page = 1, sort = 'asc', search = '' } = params;
-        const response = await contentApi.getDialogues({
+        console.log('Fetching dialogues with params:', { lessonId, limit, page, sort, search });
+
+        const response = await contentApi.getDialogues(lessonId, {
           limit,
           page,
           sort,
           search
         });
 
-        this.dialogues = response.data.detail.rows;
-        this.pagination = {
-          limit: response.data.detail.limit,
-          page: response.data.detail.page,
-          sort: response.data.detail.sort,
-          total_rows: response.data.detail.total_rows,
-          total_pages: response.data.detail.total_pages
-        };
+        console.log('Raw Fetch Dialogues Response:', response);
+
+        // Check if response exists and has the expected structure
+        if (!response) {
+          throw new Error('No response from server');
+        }
+
+        // Transform the response data to match our store structure
+        if (response.detail && response.detail.rows) {
+          console.log('Processing dialogues from response:', response.detail);
+
+          if (response.detail.rows.tasks.length === 0) {
+            // Set empty state with a message
+            this.dialogues = [{
+              id: 'no-dialog',
+              lang: 'en',
+              task_type: 'dialog',
+              dialog: [],
+              isEmpty: true,
+              message: 'This lesson has no dialogues yet'
+            }];
+          } else {
+            this.dialogues = response.detail.rows.tasks.map(dialog => {
+              console.log('Processing dialog item:', dialog);
+              return {
+                id: dialog.id,
+                lang: dialog.lang,
+                task_type: dialog.task_type,
+                dialog: dialog.detail.map(line => ({
+                  id: line.id,
+                  speaker: line.speaker,
+                  text: line.text
+                })),
+                vocabulary: response.detail.rows.vocabularies,
+                isEmpty: false
+              };
+            });
+          }
+
+          this.pagination = {
+            limit: response.detail.limit || 10,
+            page: response.detail.page || 1,
+            sort: response.detail.sort || 'asc',
+            total_rows: response.detail.total_rows || 0,
+            total_pages: response.detail.total_pages || 1
+          };
+
+          console.log('Updated dialogues state:', this.dialogues);
+          console.log('Updated pagination state:', this.pagination);
+        } else {
+          console.log('No valid dialogues data in response, setting empty state');
+          // If no data, set empty arrays and default pagination
+          this.dialogues = [{
+            id: 'no-dialog',
+            lang: 'en',
+            task_type: 'dialog',
+            dialog: [],
+            isEmpty: true,
+            message: 'This lesson has no dialogues yet'
+          }];
+          this.pagination = {
+            limit: 10,
+            page: 1,
+            sort: 'asc',
+            total_rows: 0,
+            total_pages: 1
+          };
+        }
+
         return response;
       } catch (error) {
+        console.error('Failed to fetch dialogues:', error);
+        // Set empty state on error
+        this.dialogues = [{
+          id: 'no-dialog',
+          lang: 'en',
+          task_type: 'dialog',
+          dialog: [],
+          isEmpty: true,
+          message: 'This lesson has no dialogues yet'
+        }];
+        this.pagination = {
+          limit: 10,
+          page: 1,
+          sort: 'asc',
+          total_rows: 0,
+          total_pages: 1
+        };
+        Notify.create({
+          type: 'negative',
+          message: 'Failed to fetch dialogues: ' + (error.response?.data?.message || error.message)
+        });
         throw error;
       }
     },

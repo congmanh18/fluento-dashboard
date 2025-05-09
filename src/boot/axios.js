@@ -248,7 +248,7 @@ export const contentApi = {
   reorderLessons: (topicId, data) => api.patch(`/content/topics/${topicId}/lessons/reorder`, data),
 
   // Dialogs
-  getDialogues: (params) => api.get('/content/tasks/dialogues', { params }),
+  getDialogues: (lessonId, params) => api.get(`/content/lessons/${lessonId}/tasks/dialog`, { params }),
   createDialogue: (data) => api.post('/content/tasks/dialogues', data),
   updateDialogue: (id, data) => api.patch(`/content/tasks/dialogues/${id}`, data),
   deleteDialogue: (id) => api.delete(`/content/tasks/dialogues/${id}`),
