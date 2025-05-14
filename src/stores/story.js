@@ -140,15 +140,13 @@ export const useStoryStore = defineStore('stories', {
           return;
         }
 
-        const { limit = 20, page = 1, sort = 'asc', search = '', type_task = 'story' } = params;
+        const { limit = 20, page = 1, sort = 'asc'} = params;
         console.log('=== Fetch Stories API Call ===');
         console.log('Request params:', {
           lessonId,
           limit,
           page,
           sort,
-          search,
-          type_task
         });
 
         let response;
@@ -158,8 +156,6 @@ export const useStoryStore = defineStore('stories', {
             limit,
             page,
             sort,
-            search,
-            type_task
           });
 
           console.log('Raw API Response:', response);

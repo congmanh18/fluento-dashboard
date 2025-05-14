@@ -277,7 +277,7 @@
                       </div>
 
                       <!-- Hình ảnh bài học -->
-                      <div class="col-5 text-center">
+                      <!-- <div class="col-5 text-center">
                         <div class="column items-center">
                           <q-btn
                             outline
@@ -308,10 +308,10 @@
                             class="q-mt-sm"
                           />
                         </div>
-                      </div>
+                      </div> -->
 
                       <!-- Nút tạo bài học mới -->
-                      <div class="col-3 text-center">
+                      <div class="col-9 text-center">
                         <div class="row justify-center">
                           <q-btn
                             flat
@@ -359,7 +359,7 @@
                           </div>
 
                           <!-- Hình ảnh bài học -->
-                          <div class="col-5 text-center lesson-image">
+                          <!-- <div class="col-5 text-center lesson-image">
                             <template v-if="editingLesson === lesson">
                               <div class="column items-center">
                                 <q-btn
@@ -401,10 +401,10 @@
                                 @error="handleImageError"
                               />
                             </template>
-                          </div>
+                          </div> -->
 
                           <!-- Nút thao tác -->
-                          <div class="col-3 text-center lesson-actions">
+                          <div class="col-9 text-center lesson-actions">
                             <div class="row justify-center">
                               <template v-if="editingLesson === lesson">
                                 <q-btn

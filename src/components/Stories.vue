@@ -22,7 +22,7 @@
                 <q-checkbox v-model="visibleColumns.storyResult" />
               </q-item-section>
             </q-item>
-            <q-item tag="label" v-ripple>
+            <!-- <q-item tag="label" v-ripple>
               <q-item-section>
                 <q-item-label>Audio</q-item-label>
               </q-item-section>
@@ -37,7 +37,7 @@
               <q-item-section avatar>
                 <q-checkbox v-model="visibleColumns.image" />
               </q-item-section>
-            </q-item>
+            </q-item> -->
           </q-list>
         </q-btn-dropdown>
       </div>
@@ -229,14 +229,14 @@
         </div>
 
         <!-- Audio -->
-        <div class="col-1 text-center" v-if="visibleColumns.audio">
+        <!-- <div class="col-1 text-center" v-if="visibleColumns.audio">
           <div class="text-weight-bold">Audio</div>
-        </div>
+        </div> -->
 
         <!-- Image -->
-        <div class="col-2 text-center" v-if="visibleColumns.image">
+        <!-- <div class="col-2 text-center" v-if="visibleColumns.image">
           <div class="text-weight-bold">Image</div>
-        </div>
+        </div> -->
       </div>
 
       <div class="dialogue-items">
@@ -274,7 +274,7 @@
               </div>
 
               <!-- Audio -->
-              <div class="col-1 text-center" v-if="visibleColumns.audio">
+              <!-- <div class="col-1 text-center" v-if="visibleColumns.audio">
                 <div class="row q-gutter-sm justify-center">
                   <q-btn
                     flat
@@ -285,14 +285,14 @@
                     @click="playAudio(element.audio)"
                   />
                 </div>
-              </div>
+              </div> -->
 
               <!-- Image -->
-              <div class="col-2 text-center" v-if="visibleColumns.image">
+              <!-- <div class="col-2 text-center" v-if="visibleColumns.image">
                 <div class="row q-gutter-sm justify-center">
                   <q-img :src="element.image" />
                 </div>
-              </div>
+              </div> -->
             </q-card-section>
           </q-card>
         </template>
