@@ -153,13 +153,13 @@ export const useTopicStore = defineStore('topics', {
         const totalTopics = topics.length;
         const reorderedTopics = topics.map((topic, index) => ({
           ...topic,
-          order: totalTopics - index
+          sort_order: totalTopics - index
         }));
 
         // Chuẩn bị dữ liệu cho API
         const reorderData = reorderedTopics.map(topic => ({
           id: topic.id,
-          order: topic.order
+          sort_order: topic.sort_order
         }));
 
         const response = await contentApi.reorderTopics(reorderData);
@@ -194,12 +194,12 @@ export const useTopicStore = defineStore('topics', {
     },
 
     // Sắp xếp topic theo thứ tự
-    sortTopicsByOrder(order) {
-      this.pagination.sort = order;
+    sortTopicsByOrder(sort_order) {
+      this.pagination.sort = sort_order;
       this.fetchTopics({
         limit: this.pagination.limit,
         page: this.pagination.page,
-        sort: order
+        sort: sort_order
       });
     },
 
@@ -234,7 +234,7 @@ export const useTopicStore = defineStore('topics', {
         const response = await contentApi.createLesson(topicId, {
           ...lesson,
           lang: languageStore.sourceLanguage,
-          order: 0
+          sort_order: 0
         });
 
         if (response.code === 200) {
@@ -311,13 +311,13 @@ export const useTopicStore = defineStore('topics', {
         // Cập nhật trạng thái local trước
         this.lessons[topicId] = lessons.map((lesson, index) => ({
           ...lesson,
-          order: index + 1
+          sort_order: index + 1
         }));
 
         // Chuẩn bị dữ liệu cho API
         const reorderData = lessons.map(lesson => ({
           id: lesson.id,
-          order: lesson.order
+          sort_order: lesson.sort_order
         }));
 
         const response = await contentApi.reorderLessons(topicId, reorderData);

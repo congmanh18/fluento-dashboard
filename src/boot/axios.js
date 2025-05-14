@@ -6,6 +6,8 @@ const RETRY_DELAY = 1000; // 1 second
 
 const api = axios.create({
   baseURL: 'https://api.lucas-dev.click',
+  // baseURL: 'http://localhost:4579',
+
   headers: {
     'Content-Type': 'application/json',
     'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
@@ -14,6 +16,7 @@ const api = axios.create({
 
 const uploadApi = axios.create({
   baseURL: 'https://api.lucas-dev.click',
+  // baseURL: 'http://localhost:4579',
   headers: {
     'Content-Type': 'multipart/form-data',
     'Authorization': `Bearer ${localStorage.getItem('token') || ''}`

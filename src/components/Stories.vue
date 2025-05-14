@@ -792,6 +792,7 @@ export default defineComponent({
 .story-content {
   line-height: 1.6;
   text-align: justify;
+  white-space: pre-wrap;
 }
 
 .speaker-name {
@@ -801,6 +802,7 @@ export default defineComponent({
 
 .story-text {
   color: #333;
+  white-space: pre-wrap;
 }
 
 .story-separator {
