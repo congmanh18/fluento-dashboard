@@ -2,7 +2,7 @@
   <div class="q-pa-md">
       <div class="col-12 col-md-6">
         <q-card class="my-card">
-            <dialogs />
+            <Dialogs />
         </q-card>
       </div>
   </div>
@@ -10,8 +10,8 @@
 
 <script>
 import { defineComponent, ref } from 'vue'
-import { useTopicStore } from '../../stores/topic'
-import Dialogs from '../../components/Dialogs.vue'
+import { useTopicStore } from 'src/modules/store/contents/topic.store'
+import Dialogs from './components/Dialogs.vue'
 
 export default defineComponent({
   name: 'Dialogs Page',

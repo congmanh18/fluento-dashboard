@@ -1,9 +1,9 @@
 import { defineStore } from 'pinia';
 import { Notify } from 'quasar';
 import { debounce } from 'lodash';
-import { useLanguageStore } from './language';
+import { useLanguageStore } from 'src/stores/language.js';
 import { contentApi } from 'src/boot/axios';
-import prompts from '../promt';
+import prompts from 'src/promt';
 
 export const useStoryStore = defineStore('stories', {
   state: () => ({

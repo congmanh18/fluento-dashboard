@@ -564,10 +564,10 @@
 
 <script>
 import { defineComponent, computed, ref, watch } from 'vue'
-import { useTopicStore } from '../stores/topic'
-import { useFileStore } from '../stores/file'
-import { useLanguageStore } from '../stores/language'
-import { useBaseStore } from '../stores/base'
+import { useTopicStore } from 'src/modules/store/contents/topic.store'
+import { useFileStore } from 'src/stores/file.js'
+import { useLanguageStore } from 'src/stores/language.js'
+import { useBaseStore } from 'src/stores/base.js'
 import { Notify } from 'quasar'
 import draggable from 'vuedraggable'
 import { debounce } from 'lodash'

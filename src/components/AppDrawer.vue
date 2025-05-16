@@ -38,6 +38,18 @@
         <SidebarItem to="/images" icon="image" label="Images" />
       </SidebarGroup>
 
+      <SidebarGroup icon="data_object" label="Master Data">
+        <SidebarItem to="/master-data/languages" icon="language" label="Languages" />
+        <SidebarItem to="/master-data/characters" icon="person" label="Characters" />
+      </SidebarGroup>
+
+      <SidebarGroup icon="lock" label="Authentication">
+        <SidebarItem to="/auth/login" icon="login" label="Login" />
+        <SidebarItem to="/auth/register" icon="person_add" label="Register" />
+        <SidebarItem to="/auth/forgot" icon="lock" label="Forgot Password" />
+        <SidebarItem to="/auth/reset" icon="lock" label="Reset Password" />
+      </SidebarGroup>
+
       <!-- <SidebarGroup icon="view_in_ar" label="Templates">
           <SidebarItem to="/templates/template1" icon="view_in_ar" label="Template 1" />
           <SidebarItem to="/templates/template2" icon="view_in_ar" label="Template 2" />

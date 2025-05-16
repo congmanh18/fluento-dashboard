@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { Notify } from 'quasar';
 import { debounce } from 'lodash';
-import { useLanguageStore } from './language';
+import { useLanguageStore } from 'src/stores/language';
 import { contentApi } from 'src/boot/axios';
 
 export const useTopicStore = defineStore('topics', {

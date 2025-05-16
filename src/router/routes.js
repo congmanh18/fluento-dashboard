@@ -23,12 +23,23 @@ const routes = [
 
       {path: '/tree-table', component: () => import('pages/TreeTable.vue')},
 
-      { path: 'content/topics', component: () => import('src/pages/content/TopicsManagement.vue') },
-      { path: 'content/topics2', component: () => import('src/pages/content/TopicsManagement2.vue') },
-      { path: 'content/dialogs', component: () => import('pages/content/DialogsPage.vue') },
-      { path: 'content/stories', component: () => import('pages/content/StoriesPage.vue') },
-      { path: 'content/vocabulary', component: () => import('pages/content/VocabulariesPage.vue') },
+      // Auth
+      { path: 'auth/login', component: () => import('../modules/pages/auth/Login.vue') },
+      { path: 'auth/register', component: () => import('../modules/pages/auth/Register.vue') },
+      { path: 'auth/forgot', component: () => import('../modules/pages/auth/Forgot.vue') },
+      { path: 'auth/reset', component: () => import('../modules/pages/auth/Reset.vue') },
 
+      // Content
+      { path: 'content/topics', component: () => import('../modules/pages/contents/topics/TopicsPage.vue') },
+      { path: 'content/dialogs', component: () => import('../modules/pages/contents/dialogs/DialogsPage.vue') },
+      { path: 'content/stories', component: () => import('../modules/pages/contents/stories/StoriesPage.vue') },
+      { path: 'content/vocabulary', component: () => import('../modules/pages/contents/vocabulary/VocabulariesPage.vue') },
+
+      // Master-data
+      { path: 'master-data/languages', component: () => import('../modules/pages/master-data/LanguagesPage.vue') },
+      { path: 'master-data/characters', component: () => import('../modules/pages/master-data/characters/CharactersPage.vue') },
+
+      // Images
       { path: 'images', component: () => import('pages/ImagePage.vue') },
 
       // { path: 'content/lessons', component: () => import('pages/content/LessonsPage.vue') },

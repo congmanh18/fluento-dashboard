@@ -2,7 +2,7 @@
   <div class="q-pa-md">
       <div class="col-12 col-md-6">
         <q-card class="my-card">
-            <topic-lesson />
+            <stories />
         </q-card>
       </div>
   </div>
@@ -10,14 +10,14 @@
 
 <script>
 import { defineComponent, ref } from 'vue'
-import { useTopicStore } from '../../stores/topic'
-import TopicLesson from '../../components/Topic-Lesson.vue'
+import { useTopicStore } from 'src/modules/store/contents/topic.store'
+import Stories from './components/Stories.vue'
 
 export default defineComponent({
-  name: 'Topic & Lesson Management',
+  name: 'Stories Page',
 
   components: {
-    TopicLesson
+    Stories
   },
 
   setup() {

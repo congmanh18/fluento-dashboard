@@ -16,13 +16,13 @@
           <q-list>
             <q-item tag="label" v-ripple>
               <q-item-section>
-                <q-item-label>Story Result</q-item-label>
+                <q-item-label>Dialog Result</q-item-label>
               </q-item-section>
               <q-item-section avatar>
-                <q-checkbox v-model="visibleColumns.storyResult" />
+                <q-checkbox v-model="visibleColumns.dialogResult" />
               </q-item-section>
             </q-item>
-            <!-- <q-item tag="label" v-ripple>
+            <q-item tag="label" v-ripple>
               <q-item-section>
                 <q-item-label>Audio</q-item-label>
               </q-item-section>
@@ -37,7 +37,7 @@
               <q-item-section avatar>
                 <q-checkbox v-model="visibleColumns.image" />
               </q-item-section>
-            </q-item> -->
+            </q-item>
           </q-list>
         </q-btn-dropdown>
       </div>
@@ -97,6 +97,15 @@
                 emit-value
                 map-options
               />
+              <q-select
+                v-model="selectedCharacter2"
+                :options="characterOptions"
+                label="Character 2"
+                outlined
+                dense
+                emit-value
+                map-options
+              />
               <q-input
                 v-model="selectedSentenceCount"
                 type="number"
@@ -148,7 +157,7 @@
                     color="primary"
                     label="Submit"
                     class="full-width q-mt-md"
-                    @click="submitStory"
+                    @click="submitDialogue"
                   />
                 </div>
               </div>
@@ -163,13 +172,13 @@
     <!-- Dialog list -->
     <div class="dialogue-list q-mt-md">
       <!-- Vocabulary Section -->
-      <div v-if="filteredStories.length > 0 && !filteredStories[0].isEmpty" class="q-mb-md">
+      <div v-if="filteredDialogues.length > 0 && !filteredDialogues[0].isEmpty" class="q-mb-md">
         <q-card flat bordered>
           <q-card-section>
             <div class="text-h6">vocabulary</div>
             <div class="vocabulary-section">
               <q-chip
-                v-for="(word, index) in filteredStories[0].vocabulary"
+                v-for="(word, index) in filteredDialogues[0].vocabulary"
                 :key="index"
                 color="primary"
                 text-color="white"
@@ -183,17 +192,17 @@
         </q-card>
       </div>
 
-      <!-- Add new section for submitted story -->
-      <div v-if="previewStory.length > 0" class="q-mb-md">
+      <!-- Add new section for submitted dialog -->
+      <div v-if="previewDialog.length > 0" class="q-mb-md">
         <q-card flat bordered>
           <q-card-section>
-            <div class="text-h6">Submitted Story Preview</div>
+            <div class="text-h6">Submitted Dialog Preview</div>
             <div class="row q-col-gutter-md">
-              <!-- Story Preview -->
+              <!-- Dialog Preview -->
               <div class="col-8">
-                <div class="text-subtitle2 q-mb-sm">Story:</div>
-                <div class="story-preview">
-                  <div v-for="(line, index) in previewStory[0].story" :key="index" class="q-pa-sm">
+                <div class="text-subtitle2 q-mb-sm">Dialog:</div>
+                <div class="dialog-preview">
+                  <div v-for="(line, index) in previewDialog[0].dialog" :key="index" class="q-pa-sm">
                     <span class="text-weight-bold">{{ line.speaker }}:</span> {{ line.text }}
                   </div>
                 </div>
@@ -203,7 +212,7 @@
                 <div class="text-subtitle2 q-mb-sm">Vocabulary:</div>
                 <div class="vocabulary-preview">
                   <q-chip
-                    v-for="(word, index) in previewStory[0].vocabulary"
+                    v-for="(word, index) in previewDialog[0].vocabulary"
                     :key="index"
                     color="primary"
                     text-color="white"
@@ -223,9 +232,9 @@
         <div class="col-1 text-center">
         </div>
 
-        <!-- Story Result -->
-        <div class="col-6" v-if="visibleColumns.storyResult">
-          <div class="text-weight-bold">Story Result</div>
+        <!-- Dialog Result -->
+        <div class="col-6" v-if="visibleColumns.dialogResult">
+          <div class="text-weight-bold">Dialog Result</div>
         </div>
 
         <!-- Audio -->
@@ -240,15 +249,15 @@
       </div>
 
       <div class="dialogue-items">
-        <template v-for="element in filteredStories" :key="element.id">
+        <template v-for="element in filteredDialogues" :key="element.id">
           <q-card flat bordered class="q-mb-sm">
             <q-card-section class="row items-center">
               <div class="col-1 text-left">
               </div>
 
-              <!-- Story Result -->
-              <div class="col-6 dialog-cell" v-if="visibleColumns.storyResult">
-                <div class="story-result" :class="{ 'empty-state': element.isEmpty }">
+              <!-- Dialog Result -->
+              <div class="col-6 dialog-cell" v-if="visibleColumns.dialogResult">
+                <div class="dialog-result" :class="{ 'empty-state': element.isEmpty }">
                   <template v-if="element.isEmpty">
                     <div class="empty-message">
                       <q-icon name="info" size="24px" color="grey-7" class="q-mr-sm" />
@@ -256,18 +265,8 @@
                     </div>
                   </template>
                   <template v-else>
-                    <div class="story-title q-mb-md">{{ element.title }}</div>
-                    <div class="story-content">
-                      <template v-for="(line, index) in element.story" :key="line.id">
-                        <template v-if="line.speaker">
-                          <span class="text-weight-bold speaker-name">{{ line.speaker }}:</span>
-                          <span class="story-text">{{ line.text }}</span>
-                        </template>
-                        <template v-else>
-                          <span class="story-text">{{ line.text }}</span>
-                        </template>
-                        <span v-if="index < element.story.length - 1" class="story-separator"> </span>
-                      </template>
+                    <div v-for="(line, index) in element.dialog" :key="line.id" class="dialog-line">
+                      <span class="text-weight-bold">{{ line.speaker }}:</span> {{ line.text }}
                     </div>
                   </template>
                 </div>
@@ -303,24 +302,24 @@
 
 <script>
 import { defineComponent, computed, ref, watch, onMounted } from 'vue'
-import { useStoryStore } from '../stores/story'
-import { useFileStore } from '../stores/file'
-import { useLanguageStore } from '../stores/language'
-import { useBaseStore } from '../stores/base'
+import { useDialogStore } from 'src/modules/store/contents/dialog.store'
+import { useFileStore } from 'src/stores/file.js'
+import { useLanguageStore } from 'src/stores/language.js'
+import { useBaseStore } from 'src/stores/base.js'
 
 import { Notify } from 'quasar'
 import { debounce } from 'lodash'
-import { languageOptions } from '../constants/language'
-import { useTopicStore } from '../stores/topic'
+import { languageOptions } from 'src/constants/language'
+import { useTopicStore } from 'src/modules/store/contents/topic.store'
 export default defineComponent({
-  name: 'StoryTable',
+  name: 'DialogTable',
   components: {
   },
 
   setup() {
     // Initialize stores
     const topicStore = useTopicStore()
-    const storyStore = useStoryStore()
+    const dialogStore = useDialogStore()
     const fileStore = useFileStore()
     const languageStore = useLanguageStore()
     const baseStore = useBaseStore()
@@ -335,16 +334,16 @@ export default defineComponent({
     const selectedLevel = ref(null)
     const selectedCharacter = ref(null)
     const selectedCharacter2 = ref(null)
-    const selectedSentenceCount = ref(10)
+    const selectedSentenceCount = ref(8)
     const selectedSourceLanguage = computed(() => languageStore.sourceLanguage)
 
     // Prompt and settings
     const prompt = ref('')
-    const defaultPrompt = ref(storyStore.generatePrompt())
-    const settings = ref(storyStore.settings)
+    const defaultPrompt = ref(dialogStore.generatePrompt())
+    const settings = ref(dialogStore.settings)
 
-    // Preview story
-    const previewStory = ref([])
+    // Preview dialog
+    const previewDialog = ref([])
 
     // Add new state variables
     const previewTab = ref('raw')
@@ -376,25 +375,25 @@ export default defineComponent({
       name: character.name
     }))
 
-    const modelAIOptions = storyStore.modelAIOptions
-    const statusOptions = storyStore.statusOptions
+    const modelAIOptions = dialogStore.modelAIOptions
+    const statusOptions = dialogStore.statusOptions
 
     // Column visibility
     const visibleColumns = ref({
-      storyResult: true,
+      dialogResult: true,
       audio: true,
       image: true
     })
 
     // Computed properties
-    const filteredStories = computed({
-      get: () => storyStore.stories,
+    const filteredDialogues = computed({
+      get: () => dialogStore.dialogues,
       set: (value) => {
-        storyStore.updateStories(value)
+        dialogStore.updateDialogues(value)
       }
     })
 
-    // Fetch all stories on mount
+    // Fetch all dialogues on mount
     onMounted(async () => {
       try {
         // Fetch all topics first
@@ -406,11 +405,11 @@ export default defineComponent({
           selectedTopic.value = firstTopic.id
           await topicStore.fetchLessons(firstTopic.id)
 
-          // If there are lessons, fetch stories for the first lesson
+          // If there are lessons, fetch dialogues for the first lesson
           if (topicStore.lessons[firstTopic.id]?.length > 0) {
             const firstLesson = topicStore.lessons[firstTopic.id][0]
             selectedLesson.value = firstLesson.id
-            await storyStore.fetchStories(firstLesson.id)
+            await dialogStore.fetchDialogues(firstLesson.id)
           }
         }
       } catch (error) {
@@ -439,16 +438,16 @@ export default defineComponent({
       }
     }, { immediate: true })
 
-    // Watch for lesson changes to load stories
+    // Watch for lesson changes to load dialogues
     watch(selectedLesson, async (newLessonId) => {
       if (newLessonId) {
         try {
-          await storyStore.fetchStories(newLessonId)
+          await dialogStore.fetchDialogues(newLessonId)
         } catch (error) {
-          console.error('Failed to fetch stories:', error)
+          console.error('Failed to fetch dialogues:', error)
           Notify.create({
             type: 'negative',
-            message: 'Failed to load stories'
+            message: 'Failed to load dialogues'
           })
         }
       }
@@ -478,7 +477,7 @@ export default defineComponent({
       console.log('Character 1 Name:', character1Name)
       console.log('Character 2 Name:', character2Name)
 
-      return storyStore.generatePrompt({
+      return dialogStore.generatePrompt({
         topic: selectedTopicObj?.label || '',
         lesson: lesson?.label || '',
         level: selectedLevel.value || '',
@@ -507,7 +506,7 @@ export default defineComponent({
     )
 
     // Functions
-    const submitStory = async () => {
+    const submitDialogue = async () => {
       try {
         if (!rawJson.value) {
           Notify.create({
@@ -517,23 +516,21 @@ export default defineComponent({
           return
         }
 
-        const storyData = JSON.parse(rawJson.value)
+        const dialogueData = JSON.parse(rawJson.value)
 
         // Validate required fields
-        if (!storyData.story || !storyData.story.title || !storyData.story.content) {
-          throw new Error('Invalid story format: missing title or content')
+        if (!dialogueData.dialog || !Array.isArray(dialogueData.dialog)) {
+          throw new Error('Invalid dialogue format')
         }
 
         // Get selected character details
         const character1 = characterOptions.find(c => c.value === selectedCharacter.value)
+        const character2 = characterOptions.find(c => c.value === selectedCharacter2.value)
 
-        // Create the complete story data with image and setting
-        const completeStoryData = {
-          story: {
-            title: storyData.story.title,
-            content: storyData.story.content
-          },
-          vocabulary: storyData.vocabulary || [],
+        // Create the complete dialogue data with image and setting
+        const completeDialogueData = {
+          dialog: dialogueData.dialog,
+          vocabulary: dialogueData.vocabulary || [],
           image: {
             id: ["Ivi5COLKkSSI"], // Default image ID
             start_time: [10], // Default start time
@@ -544,27 +541,29 @@ export default defineComponent({
             lang: selectedSourceLanguage.value,
             lesson_id: selectedLesson.value,
             level: selectedLevel.value,
+            order: 1, // Default order
             topic_id: selectedTopic.value,
-            voice_code_1: character1?.voice_code
+            voice_code_1: character1?.voice_code,
+            voice_code_2: character2?.voice_code
           }
         }
 
         // Submit to API using store
-        const response = await storyStore.addStory(completeStoryData)
+        const response = await dialogStore.addDialogue(completeDialogueData)
 
         // Only clear the JSON input
         rawJson.value = ''
 
-        // Refresh stories list
-        await storyStore.fetchStories(selectedLesson.value)
+        // Refresh dialogues list
+        await dialogStore.fetchDialogues(selectedLesson.value)
 
         Notify.create({
-          message: 'Story created successfully',
+          message: 'Dialogue created successfully',
           color: 'positive'
         })
       } catch (error) {
         Notify.create({
-          message: error.message || 'Failed to create story',
+          message: error.message || 'Failed to create dialogue',
           color: 'negative'
         })
       }
@@ -574,8 +573,8 @@ export default defineComponent({
       console.log('Handle search')
     }
 
-    const loadStories = () => {
-      console.log('Load stories')
+    const loadDialogues = () => {
+      console.log('Load dialogues')
     }
 
     // Audio handling
@@ -602,7 +601,7 @@ export default defineComponent({
 
     return {
       // State variables
-      filteredStories,
+      filteredDialogues,
       visibleColumns,
       isUpdating,
       isGenerating,
@@ -625,16 +624,16 @@ export default defineComponent({
       prompt,
       defaultPrompt,
       settings,
-      previewStory,
+      previewDialog,
 
       // New state variables
       previewTab,
       rawJson,
 
       // Functions
-      submitStory,
+      submitDialogue,
       handleSearch,
-      loadStories,
+      loadDialogues,
       playAudio,
       copyPrompt
     }
@@ -755,16 +754,16 @@ export default defineComponent({
   padding: 0;
 }
 
-.story-result {
+.dialog-result {
   background-color: #f5f5f5;
   border-radius: 4px;
   border: 1px solid #e0e0e0;
-  padding: 16px;
+  padding: 8px;
   max-height: 200px;
   overflow-y: auto;
 }
 
-.story-result.empty-state {
+.dialog-result.empty-state {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -781,32 +780,16 @@ export default defineComponent({
   padding: 16px;
 }
 
-.story-title {
-  font-size: 1.2em;
-  font-weight: bold;
-  color: #1976D2;
-  padding-bottom: 8px;
-  border-bottom: 2px solid #e0e0e0;
+.dialog-line {
+  padding: 4px 8px;
+  border-bottom: 1px solid #e0e0e0;
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.4;
 }
 
-.story-content {
-  line-height: 1.6;
-  text-align: justify;
-  white-space: pre-wrap;
-}
-
-.speaker-name {
-  color: #1976D2;
-  margin-right: 8px;
-}
-
-.story-text {
-  color: #333;
-  white-space: pre-wrap;
-}
-
-.story-separator {
-  margin: 0 4px;
+.dialog-line:last-child {
+  border-bottom: none;
 }
 
 /* Word column */
@@ -844,7 +827,7 @@ export default defineComponent({
   margin: 2px 0;
 }
 
-/* Selected story */
+/* Selected dialog */
 .q-card.selected {
   background-color: #e8f5e9;
   transition: background-color 0.3s ease;
@@ -902,7 +885,7 @@ export default defineComponent({
   }
 }
 
-/* Gradient background for stories */
+/* Gradient background for dialogs */
 .bg-gradient-red {
   background: linear-gradient(145deg, #fff, #ffe6e6);
 }
@@ -937,8 +920,8 @@ export default defineComponent({
   padding: 4px 0;
 }
 
-/* Story Preview */
-.story-preview {
+/* Dialog Preview */
+.dialog-preview {
   background-color: #f5f5f5;
   border-radius: 4px;
   border: 1px solid #e0e0e0;
@@ -947,7 +930,7 @@ export default defineComponent({
   overflow-y: auto;
 }
 
-.story-preview > div {
+.dialog-preview > div {
   padding: 4px 8px;
   border-bottom: 1px solid #e0e0e0;
   white-space: normal;
@@ -955,7 +938,7 @@ export default defineComponent({
   line-height: 1.4;
 }
 
-.story-preview > div:last-child {
+.dialog-preview > div:last-child {
   border-bottom: none;
 }
 

@@ -2,7 +2,7 @@
   <div class="q-pa-md">
       <div class="col-12 col-md-6">
         <q-card class="my-card">
-            <topic-lesson />
+            <Characters />
         </q-card>
       </div>
   </div>
@@ -10,14 +10,14 @@
 
 <script>
 import { defineComponent, ref } from 'vue'
-import { useTopicStore } from '../../stores/topic'
-import TopicLesson from '../../components/Topic-Lesson2.vue'
+import { useTopicStore } from 'src/modules/store/contents/topic.store'
+import Characters from './components/Characters.vue'
 
 export default defineComponent({
-  name: 'Template3',
+  name: 'Characters Page',
 
   components: {
-    TopicLesson
+    Characters
   },
 
   setup() {
@@ -66,6 +66,30 @@ export default defineComponent({
 </script>
 
 <style scoped>
+.q-pa-md {
+  height: calc(105vh - 100px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.row.q-mb-md, .topic-header, .row.items-center.q-pa-sm {
+  flex: 0 0 auto;
+}
+
+.topic-list {
+  flex: 1 1 auto;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 200px);
+}
+
+.topic-items {
+  overflow-y: auto;
+  flex: 1 1 auto;
+}
+
 .my-card {
   height: 100%;
 }
